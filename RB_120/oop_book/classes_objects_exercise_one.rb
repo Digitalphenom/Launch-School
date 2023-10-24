@@ -13,6 +13,8 @@ Create a class called MyCar. When you initialize a new instance or object of the
 =end
 
 class MyCar
+  attr_accessor :color
+  attr_reader :year
 
   def initialize(year, color, model)
     @year = year
@@ -42,6 +44,8 @@ end
 
 
 toyota = MyCar.new(2009, "red", "yaris")
+p toyota.color 
+p toyota.year 
 
 p toyota.speed_up(25)
 p toyota.brake(25)
