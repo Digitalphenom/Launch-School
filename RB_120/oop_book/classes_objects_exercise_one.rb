@@ -27,6 +27,10 @@ class MyCar
     @speed += x
   end
 
+  def change_color(input)
+    self.color = input
+  end
+
   def brake(x)
     @speed -= x
   end
