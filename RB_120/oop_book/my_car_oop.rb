@@ -12,11 +12,13 @@ Create a class called MyCar. When you initialize a new instance or object of the
 
 Add a class method to your MyCar class that calculates the gas mileage (i.e. miles per gallon) of any car.
 
+Override the to_s method to create a user friendly print out of your object.
+
 =end
 
 class MyCar
   attr_accessor :color
-  attr_reader :year
+  attr_reader :year, :model
 
   def self.calculate_gas_milage(miles, gallons)
     puts "Your miles per gallons is: #{miles / gallons} mpg"
@@ -27,6 +29,15 @@ class MyCar
     @color = color
     @model = model
     @speed = 0
+    @vin = 0
+  end
+
+  def generate_vin
+    11.times { @vin += @vin * 10 + ("0".."9").to_a.sample.to_i }
+  end
+  
+  def to_s
+    "Your car is a #{color}, #{year}, #{model} #{generate_vin}"
   end
 
   def speed_up(x)
@@ -53,5 +64,7 @@ class MyCar
 end
 
 toyota = MyCar.new(2009, "Red", "Yaris")
+puts toyota
 
 MyCar.calculate_gas_milage(235, 10)
+p toyota
