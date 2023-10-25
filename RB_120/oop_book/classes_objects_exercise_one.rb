@@ -10,11 +10,17 @@ Create a class called MyCar. When you initialize a new instance or object of the
 ▣ Create instance method that defines the following behavior:
   □ speed up, brake, shut off car
 
+Add a class method to your MyCar class that calculates the gas mileage (i.e. miles per gallon) of any car.
+
 =end
 
 class MyCar
   attr_accessor :color
   attr_reader :year
+
+  def self.calculate_gas_milage(miles, gallons)
+    puts "Your miles per gallons is: #{miles / gallons} mpg"
+  end
 
   def initialize(year, color, model)
     @year = year
@@ -46,11 +52,6 @@ class MyCar
 
 end
 
+toyota = MyCar.new(2009, "Red", "Yaris")
 
-toyota = MyCar.new(2009, "red", "yaris")
-p toyota.color 
-p toyota.year 
-
-p toyota.speed_up(25)
-p toyota.brake(25)
-p toyota.shut_off("off")
+MyCar.calculate_gas_milage(235, 10)
