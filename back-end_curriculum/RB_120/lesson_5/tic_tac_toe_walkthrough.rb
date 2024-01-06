@@ -40,7 +40,6 @@ class Board
   end
   
   def someone_won?
-    #binding.pry
     !!detect_winner
   end
 
@@ -124,8 +123,10 @@ class TTTGame
     puts "Thanks for playing!"
   end
 
-  def display_board(clear = true)
-    board.clear if clear
+  def display_board(clear_screen: true)
+    
+    board.clear if clear_screen
+
     puts "You're #{human.marker}. Computer is #{computer.marker}"
     puts ""
     puts "         |       |"
@@ -186,7 +187,7 @@ class TTTGame
     display_welcome_message
 
     loop do
-      display_board(false)
+      display_board(clear_screen: false)
 
       loop do 
         human_moves
@@ -208,8 +209,8 @@ class TTTGame
 end
 
 # Start Game
-game = TTTGame.new
-game.play
+TTTGame.new.play
+
 
 
 
