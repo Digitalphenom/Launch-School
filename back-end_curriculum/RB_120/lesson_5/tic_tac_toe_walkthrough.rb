@@ -11,6 +11,9 @@
   □ play
 
 =end
+
+# It is beest to access a method instead of directly accessing instance variables so we would access the method directly.
+
 require "pry"
 
 class Board
@@ -23,11 +26,22 @@ class Board
     (1..9).each { |key| @squares[key] = Square.new}
   end
 
-  def get_square_at(key)
-    @squares[key]
+  def draw_board
+    puts "         |       |"
+    puts "      #{@squares[1]}  |   #{@squares[2]}   |  #{@squares[3]}"
+    puts "         |       |"
+    puts "   ------+-------+------"
+    puts "         |       |"
+    puts "      #{@squares[4]}  |   #{@squares[5]}   |  #{@squares[6]}"
+    puts "         |       |"
+    puts "   ------+-------+------"
+    puts "         |       |"
+    puts "      #{@squares[7]}  |   #{@squares[8]}   |  #{@squares[9]}"
+    puts "         |       |"
+    puts ""
   end
-  
-  def set_square_at(key, marker)
+
+  def []=(key, marker)
     @squares[key].marker = marker
   end
   
@@ -128,23 +142,6 @@ class TTTGame
     display_board()
   end
 
-  def display_board
-    puts "You're #{human.marker}. Computer is #{computer.marker}"
-    puts ""
-    puts "         |       |"
-    puts "      #{board.get_square_at(1)}  |   #{board.get_square_at(2)}   |  #{board.get_square_at(3)}"
-    puts "         |       |"
-    puts "   ------+-------+------"
-    puts "         |       |"
-    puts "      #{board.get_square_at(4)}  |   #{board.get_square_at(5)}   |  #{board.get_square_at(6)}"
-    puts "         |       |"
-    puts "   ------+-------+------"
-    puts "         |       |"
-    puts "      #{board.get_square_at(7)}  |   #{board.get_square_at(8)}   |  #{board.get_square_at(9)}"
-    puts "         |       |"
-    puts ""
-  end
-  
   def human_moves
     puts "Chose a square between #{board.unmarked_keys.join(", ")}:"
     square = nil
@@ -153,11 +150,11 @@ class TTTGame
       break if board.unmarked_keys.include?(square)
       puts "Sorry, that's not a valid choice."
     end
-    board.set_square_at(square, @human.marker)
+    board[square] = human.marker
   end
   
   def computer_moves
-    board.set_square_at( board.unmarked_keys.sample, computer.marker)
+    board[board.unmarked_keys.sample] = computer.marker
   end
 
   def display_result
@@ -182,6 +179,13 @@ class TTTGame
       puts "Sorry, must be y or n"
     end
     answer == "y"
+  end
+
+  def display_board
+    puts "You're #{human.marker}. Computer is #{computer.marker}"
+    puts
+    board.draw_board
+    puts
   end
 
   def reset
