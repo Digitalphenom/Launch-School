@@ -81,7 +81,7 @@ class Board
       squares.collect(&:marker).count("O")
     end
   end
-  
+
 end
 
 class Square 
@@ -116,14 +116,39 @@ class TTTGame
   COMPUTER_MARKER = "O"
 
   attr_reader :board, :human, :computer
-  attr_accessor :turns
-
+  
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
     @turns = (1..9).to_a.map { |num| num.odd? ? true : false}
   end
+
+  def play
+    clear
+    display_welcome_message
+    display_who_moves_first
+    move_choice
+    display_board
+
+    loop do
+      loop do 
+        current_player_moves
+        break if board.someone_won? || board.full?
+        clear_screen_and_display_board
+      end
+      display_result
+      break unless play_again?
+      reset
+      display_play_again_message
+      display_who_moves_first
+      clear_screen_and_display_board
+
+    end
+    display_goodbye_message
+  end
+
+  private
 
   def toggle_turn(choice)
     @turns.shift
@@ -226,29 +251,8 @@ class TTTGame
     turns.shift ? human_moves : computer_moves
   end
 
-  def play
-    clear
-    display_welcome_message
-    display_who_moves_first
-    move_choice
-    display_board
+  attr_accessor :turns
 
-    loop do
-      loop do 
-        current_player_moves
-        break if board.someone_won? || board.full?
-        clear_screen_and_display_board
-      end
-      display_result
-      break unless play_again?
-      reset
-      display_play_again_message
-      display_who_moves_first
-      clear_screen_and_display_board
-
-    end
-    display_goodbye_message
-  end
 end
 
 # Start Game
