@@ -116,16 +116,17 @@ class TTTGame
   COMPUTER_MARKER = "O"
 
   attr_reader :board, :human, :computer
-  attr_accessor :rounds
+  attr_accessor :turns
+
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
-    @rounds = (1..9).to_a.map { |num| num.odd? ? true : false}
+    @turns = (1..9).to_a.map { |num| num.odd? ? true : false}
   end
 
-  def reset_rounds
-    @rounds = (1..9).to_a.map { |num| num.odd? ? true : false}
+  def reset_turns
+    @turns = (1..9).to_a.map { |num| num.odd? ? true : false}
   end
 
   def display_welcome_message
@@ -193,7 +194,7 @@ class TTTGame
 
   def reset
     board.reset
-    reset_rounds
+    reset_turns
     clear_screen_and_display_board
   end
   
@@ -203,7 +204,7 @@ class TTTGame
   end
 
   def current_player_moves
-    rounds.shift ? human_moves : computer_moves
+    turns.shift ? human_moves : computer_moves
   end
 
   def play
