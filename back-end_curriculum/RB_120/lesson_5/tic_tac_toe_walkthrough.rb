@@ -52,7 +52,7 @@ class Board
   def full?
     unmarked_keys.empty?
   end
-  
+
   def someone_won?
     !!winning_marker
   end
@@ -100,7 +100,7 @@ class Square
   def unmarked?
     marker == INITIAL_MARKER
   end
-  
+
 end
 
 class Player
@@ -125,6 +125,25 @@ class TTTGame
     @turns = (1..9).to_a.map { |num| num.odd? ? true : false}
   end
 
+  def toggle_turn(choice)
+    @turns.shift
+    @turns << false
+  end
+
+  def whos_turn(choice)
+    choice == "2" ? shift_turn(choice) : @turns
+  end
+
+  def display_who_moves_first
+    puts "      Who goes first?"
+    puts "Press: 1 for Human | 2 for Computer"
+  end
+
+  def move_choice
+    choice = gets.chomp
+    toggle_turn(choice)
+  end
+
   def reset_turns
     @turns = (1..9).to_a.map { |num| num.odd? ? true : false}
   end
@@ -132,7 +151,7 @@ class TTTGame
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!"
   end
-  
+
   def display_goodbye_message
     puts "Thanks for playing!"
   end
@@ -156,7 +175,7 @@ class TTTGame
     end
     board[square] = human.marker
   end
-  
+
   def computer_moves
     board[board.unmarked_keys.sample] = computer.marker
   end
@@ -197,7 +216,7 @@ class TTTGame
     reset_turns
     clear_screen_and_display_board
   end
-  
+
   def display_play_again_message
     puts "Let's play again"
     puts
@@ -210,6 +229,8 @@ class TTTGame
   def play
     clear
     display_welcome_message
+    display_who_moves_first
+    move_choice
     display_board
 
     loop do
@@ -222,6 +243,8 @@ class TTTGame
       break unless play_again?
       reset
       display_play_again_message
+      display_who_moves_first
+      clear_screen_and_display_board
 
     end
     display_goodbye_message
