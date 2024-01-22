@@ -51,7 +51,8 @@ class Deck
   def display_cards
     get_card_states
     get_total
-    puts "Player Cards: #{user_cards} Total: #{@user_total} Dealer Cards: #{dealer_cards} Total: #{@dealer_total}" 
+    puts "Player Cards: #{user_cards} Your running total is: #{@user_total}"
+    puts "Dealer Cards: #{dealer_cards} Dealer total: #{@dealer_total}" 
   end
 
   def get_card_states
@@ -63,7 +64,10 @@ class Deck
     @user_total = @user_card_state.get_total.sum
     @dealer_total = @dealer_card_state.get_total.sum
   end
-  
+
+  def add_to_deck
+    user_cards << @deck[SUITS.sample].sample
+  end
 
 end
 
@@ -95,10 +99,16 @@ class Game
 
   def initialize
     @deck = Deck.new
+    @player = Player.new
   end
 
   def show_initial_cards
+    puts
     deck.display_cards
+  end
+
+  def clear_screen
+    system "clear"
   end
 
   def display_welcome_message
@@ -118,15 +128,42 @@ class Game
     gets.chomp
   end
 
+  def hit_or_stay
+    puts
+    puts PROMPT["hit_or_stay"]
+    puts PROMPT["options"]
+  end
+
+  def hit_or_stay_choice
+    gets.chomp
+  end
+
+  def player_turn
+    loop do 
+      hit_or_stay
+      if hit_or_stay_choice == "1"
+        deck.add_to_deck
+        clear_screen
+        show_initial_cards
+      else
+        break
+      end
+    end
+  end
+    # here we prompt the user if he wants to hit or stay and fill in the required logic for each choice.
+    # if stay then we pass the turn to dealer
+    # if HIT then we add 1 card to the pile and reflect that to the screen by updating stats.
+
   def start
     display_welcome_message
     loop do 
       n = start_game
-      next unless n == "1"
+      next  unless n == "1"
+      clear_screen
       deck.deal
       show_initial_cards
 
-      # player_turn
+      player_turn
       # dealer_turn
       # show_result
       break
