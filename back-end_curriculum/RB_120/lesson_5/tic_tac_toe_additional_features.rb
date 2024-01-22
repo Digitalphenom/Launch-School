@@ -61,11 +61,7 @@ class Board
   private
 
   def count_markers(squares)
-    if squares.collect(&:marker).count('X') == 3
-      squares.collect(&:marker).count('X')
-    elsif squares.collect(&:marker).count('O') == 3
-      squares.collect(&:marker).count('O')
-    end
+    squares.collect(&:marker).count('X') == 3 ||   squares.collect(&:marker).count('O') == 3
   end
 end
 
