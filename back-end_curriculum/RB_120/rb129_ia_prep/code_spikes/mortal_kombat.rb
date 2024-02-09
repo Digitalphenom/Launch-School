@@ -1,23 +1,19 @@
-
-require 'pry'
 class MortalKombat
   attr_reader :player1, :player2
 
   def initialize(players)
-    p1, p2 = players
-    @player1 = Player.new(p1)
-    @player2 = Player.new(p2)
+    @player1, @player2 = players
   end
 
   def to_s
     "*********************************************
-            FIGHT! FIGHT!\n           #{player1.name} VS #{player2.name}
+            FIGHT! FIGHT!\n           #{player1.class} VS #{player2.class}
 *********************************************\n#{display_player_stats}"
   end
 
   def display_player_stats
-    "\nPlayer1: #{player1.name}\nHealth: #{player1.health}\nCostume:#{player1.costume_style}\nSpecial Move: #{player1.special_move}\nBasic Moves:\n#{player1.basic_moves}\n
-Player2: #{player2.name}\nHealth: #{player2.health}\nCostume:#{player2.costume_style}\nSpecial Move: #{player2.special_move}\nBasic Moves:\n#{player1.basic_moves}"
+    "\nPlayer1: #{player1.class}\nHEALTH: #{player1.health}\nCostume:#{player1.costume_style}\nSpecial Move: #{player1.special_move}\nBasic Moves:\n#{player1.basic_moves}\n
+Player2: #{player2.class}\nHEALTH: #{player2.health}\nCOSTUME:#{player2.costume_style}\nSpecial Move: #{player2.special_move}\nBasic Moves:\n#{player1.basic_moves}"
   end
 
 end
@@ -52,46 +48,89 @@ module FireAble
   end
 end
 
-class Player
-  attr_reader :name, :health ,:costume_style, :special_move
+class PlayerRoster
+  attr_reader :name, :health ,:costume_style, :special_move_damage
 
-  include Movable
+  include BasicMovable
 
-  def initialize(name)
-    @name = name
+  def initialize
     @health = 100
     @player_type = human_or_god
-    @costume_style, @special_move  = costume_style_and_special_ability
   end
 
   def human_or_god
-    case name.downcase
+    case self.class.to_s
     when 'raiden' then 'God'
     else
       'Human'
     end
   end
-
-  def costume_style_and_special_ability
-    case name.downcase
-      when 'kitana' then ['Has Fans', 'Throws Fans For 15 Damage']
-      when 'raiden' then ['Very Large Hat', 'Shoots Lightings For 25 Damage']
-      when 'liu kang' then ['Has No Shirt', 'Fly\'s Through Air For 72 Damage']
-      when 'jax' then ['Metal Arms', 'Pound\'s Ground For 63 Damage']
-    end
-  end
-
 end
 
+class Jax < PlayerRoster
+  include FireAble
+
+  def initialize
+    super
+    @costume_style = 'Metal Arms'
+    @special_move_damage = 63
+  end
+
+  def special_move
+    "Pound's Ground For #{special_move_damage} Damage"
+  end
+end
+
+class LiuKang < PlayerRoster
+  include FlyAble
+
+  def initialize
+    super
+    @costume_style = 'Has No Shirt'
+    @special_move_damage = 72
+  end
+
+  def special_move
+    "Fly's Through Air For #{special_move_damage} Damage"
+  end
+end
+
+class Raiden < PlayerRoster
+  include FireAble
+
+  def initialize
+    super
+    @costume_style = 'Very Large Hat'
+    @special_move_damage = 25
+  end
+  def special_move
+    "Shoots Lightings For #{special_move_damage} Damage"
+  end
+end
+
+class Kitana < PlayerRoster
+  include FlyAble
+
+  def initialize
+    super
+    @costume_style = 'Has Fans'
+    @special_move_damage = 15
+  end
+
+  def special_move
+    "Throws Fans For #{special_move_damage} Damage"
+  end
+end
+
+
 class PlayerScreen
-  CHARACTERS = ['Raiden', 'Liu Kang', 'Jax', 'Kitana']
+  CHARACTERS = [Jax.new, LiuKang.new, Raiden.new, Kitana.new]
 
   attr_reader :start_game
 
   def initialize
     @start_game = MortalKombat.new([CHARACTERS.sample,  CHARACTERS.sample])
   end
-
 end
 
 game1 = PlayerScreen.new
