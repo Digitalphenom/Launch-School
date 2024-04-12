@@ -3,27 +3,31 @@ require "yaml"
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 module SpecialMoves
   def self.r2d2
-    @r2d2 = ["rock", "scissors", "lizard", "spock"].sample
+    ["rock", "scissors", "lizard", "spock"].sample
   end
 
   def self.hal
-    @hal = ["rock", "scissors", "lizard", "spock", "spock"].sample
+    ["rock", "scissors", "lizard", "spock", "spock"].sample
   end
 
   def self.number5
-    @number5 = ["rock", "scissors", "lizard", "lizard", "spock"].sample
+    ["rock", "scissors", "lizard", "lizard", "spock"].sample
   end
 
   def self.chappie
-    @chappie = ["rock", "rock", "scissors", "lizard", "spock", "spock"].sample
+    ["rock", "rock", "scissors", "lizard", "spock", "spock"].sample
   end
 
   def self.sonny
-    @sonny = ["scissors", "lizard", "lizard"].sample
+    ["scissors", "lizard", "lizard"].sample
   end
 end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 module Banerable
   class Banner
@@ -72,11 +76,15 @@ module Formatable
   end
 end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class Move
   VALUES = { 1 => "rock", 2 => "paper", 3 => "scissors", 4 => "lizard", 5 =>
 "spock" }
   include SpecialMoves
   include Formatable
+
+  attr_reader :value
 
   def initialize(value)
     @value = value
@@ -126,26 +134,6 @@ class Move
 
   # Player Loses
 
-  def rock_loss?(other_move)
-    (rock? && other_move.paper?) || (rock? && other_move.spock?)
-  end
-
-  def paper_loss?(other_move)
-    (paper? && other_move.lizard?) || (paper? && other_move.scissors?)
-  end
-
-  def scissors_loss?(other_move)
-    (scissors? && other_move.rock?) || (scissors? && other_move.spock?)
-  end
-
-  def lizard_loss?(other_move)
-    (lizard? && other_move.spock?) || (lizard? && other_move.paper?)
-  end
-
-  def spock_loss?(other_move)
-    (spock? && other_move.lizard?) || (spock? && other_move.paper?)
-  end
-
   def >(other_move)
     rock_wins?(other_move) ||
       paper_wins?(other_move) ||
@@ -154,18 +142,12 @@ class Move
       spock_wins?(other_move)
   end
 
-  def <(other_move)
-    scissors_loss?(other_move) ||
-      lizard_loss?(other_move) ||
-      paper_loss?(other_move) ||
-      spock_loss?(other_move) ||
-      rock_loss?(other_move)
-  end
-
   def to_s
     @value
   end
 end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Player
   attr_accessor :name, :all_moves, :move
@@ -186,6 +168,8 @@ class Player
     @all_moves
   end
 end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Human < Player
   def set_name
@@ -237,6 +221,8 @@ class Computer < Player
   end
 end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class RPSGame
   include Formatable
 
@@ -246,6 +232,7 @@ class RPSGame
     @human_score = 0
     @computer_score = 0
     @round = 1
+    @winner = nil
   end
 
   def display_welcome_message
@@ -263,18 +250,25 @@ class RPSGame
     puts "#{computer.name} chose #{computer.move}"
   end
 
+  def check_winning_move
+    return @winner = 'tie' if human.move.value == computer.move.value
+    human.move > computer.move ? @winner = true : @winner = false
+  end
+
   def display_winner_and_score
-    if human.move > computer.move
+    check_winning_move()
+    return special_output("Its a tie!") if @winner == 'tie'
+
+    if @winner
       special_output("#{human.name} WON!")
       @human_score += 1
-    elsif human.move < computer.move
+    else
       special_output("#{computer.name} WON!")
       @computer_score += 1
-    else
-      special_output("Its a tie!")
     end
-    display_score
+    display_score()
   end
+
 
   def add_moves
     human.add_to_moves(human.name, human.move)
@@ -379,5 +373,6 @@ class RPSGame
 
   attr_accessor :human, :computer, :human_score, :computer_score, :round
 end
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 RPSGame.new.play
