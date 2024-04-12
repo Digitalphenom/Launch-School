@@ -249,7 +249,7 @@ class RPSGame
 
   def display_winner_and_score
     check_winning_move()
-    return special_output("Its a tie!") if @winner == 'tie'
+    return display_tie() if @winner == 'tie'
 
     if @winner
       special_output("#{human.name} WON!")
@@ -260,7 +260,11 @@ class RPSGame
     end
     display_score()
   end
-
+  
+  def display_tie
+    special_output("Its a tie!")
+    display_score()
+  end
 
   def add_moves
     human.add_to_moves(human.name, human.move)
