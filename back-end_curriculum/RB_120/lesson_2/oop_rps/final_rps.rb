@@ -29,35 +29,6 @@ end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
-module Banerable
-  class Banner
-    attr_reader :message, :center
-
-    def initialize(message)
-      @message = message.to_s
-      @center = "-" * (message.to_s.size + 2)
-    end
-
-    def to_s
-      [horizontal_rule, message_line, horizontal_rule].join("\n")
-    end
-
-    private
-
-    def empty_line
-      "| #{message.size} |"
-    end
-
-    def horizontal_rule
-      "+#{center}+"
-    end
-
-    def message_line
-      "| #{message} |"
-    end
-  end
-end
-
 module Formatable
   def new_line
     puts
@@ -267,8 +238,8 @@ class RPSGame
   end
 
   def add_moves
-    human.add_to_moves(human.name, human.move)
-    computer.add_to_moves(computer.name, computer.move)
+    human.add_to_moves(human.name, human.move.value)
+    computer.add_to_moves(computer.name, computer.move.value)
   end
 
   def display_game_winner
@@ -280,16 +251,12 @@ class RPSGame
     end
   end
 
-  def initialize_banner(moves)
-    puts Banerable::Banner.new(moves)
-  end
-
   def display_move_history
-    puts "User Moves:"
-    human.all_moves.values.flatten.each { |moves| initialize_banner(moves) }
+    puts "#{human.name}'s Moves:"
+    p human.all_moves.values.first
     new_line
-    puts "Computer Moves:"
-    computer.all_moves.values.flatten.each { |moves| initialize_banner(moves) }
+    puts "#{computer.name}'s Moves:"
+    p computer.all_moves.values.first
     new_line
   end
 
