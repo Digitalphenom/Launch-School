@@ -132,8 +132,6 @@ class Move
     (spock? && other_move.rock?) || (spock? && other_move.scissors?)
   end
 
-  # Player Loses
-
   def >(other_move)
     rock_wins?(other_move) ||
       paper_wins?(other_move) ||
@@ -191,7 +189,7 @@ class Human < Player
     choice.to_s.size == 1
   end
 
-  def choose(round)
+  def choice(round)
     choice = nil
     loop do
       indent("Round: #{round}")
@@ -207,17 +205,11 @@ end
 
 class Computer < Player
   def set_name
-    self.name = ["R2D2", "Hal", "Chappie", "Sonny", "Number 5"].sample
+    self.name = ["R2D2", "Hal", "Chappie", "Sonny", "Number5"].sample
   end
 
-  def choose
-    case name
-    when "R2D2" then self.move = Move.new(SpecialMoves.r2d2)
-    when "Hal" then self.move = Move.new(SpecialMoves.hal)
-    when "Chappie" then self.move = Move.new(SpecialMoves.chappie)
-    when "Sonny" then self.move = Move.new(SpecialMoves.sonny)
-    when "Number 5" then self.move = Move.new(SpecialMoves.number5)
-    end
+  def choice
+    self.move = Move.new(SpecialMoves.send(name.downcase))
   end
 end
 
@@ -261,10 +253,10 @@ class RPSGame
 
     if @winner
       special_output("#{human.name} WON!")
-      @human_score += 1
+      self.human_score += 1
     else
       special_output("#{computer.name} WON!")
-      @computer_score += 1
+      self.computer_score += 1
     end
     display_score()
   end
@@ -276,12 +268,11 @@ class RPSGame
   end
 
   def display_game_winner
-    if @human_score > @computer_score
+    return special_output "Its a tie!" if human_score == computer_score
+    if human_score > computer_score
       special_output "#{human.name} wins the game!"
-    elsif @human_score < @computer_score
-      special_output "#{computer.name} wins the game!"
     else
-      special_output "Its a tie!"
+      special_output "#{computer.name} wins the game!"
     end
   end
 
@@ -339,8 +330,8 @@ class RPSGame
   end
 
   def make_choice(round)
-    human.choose(round)
-    computer.choose
+    human.choice(round)
+    computer.choice
   end
 
   def display_stats
