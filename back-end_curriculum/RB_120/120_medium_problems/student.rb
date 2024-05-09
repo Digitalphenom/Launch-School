@@ -1,49 +1,41 @@
-
-class Student
-  def initialize(name, year)
-    @name = name
-    @year = year
-    @parking = validate_parking
-  end
-  
-  def validate_parking; self.class == Graduate ? true : false; end
-
-end
-
-class Graduate < Student
-end
-
-class UnderGraduate < Student
-end
-
-p Graduate.new('Joe', 2028)
-p UnderGraduate.new('D', 2023)
-
-#-----------------------------------------
-puts 
-
 class Student
   def initialize(name, year)
     @name = name
     @year = year
   end
+
+  def school_name
+      puts 'USC'
+  end
 end
 
 class Graduate < Student
-  def initialize(name, year)
-    super(name, year)
-    @parking = true
+  def initialize(name, year, parking)
+      super(name, year)
+      @parking = parking
   end
 end
 
 class Undergraduate < Student
+  def initialize(name, year)
+      super
+  end
 end
 
 class Junior < Student
+
+  def initialize(name, year)
+      super
+  end
+
+  def school_name(name)
+      super()
+  end
+
 end
+# If we create another class that descends from `Student` and we use the `super` keyword within the `initialize` method without explicit arguments a argument error is raised because we must invoke the method in the superclass with the corresponding argument number. `super()` with parens invokes the method without explicit arguments. So the only scenerio where this would work would be if we define an instance method in the superclass that does not require arguments. Then we can invoke that method from within a `subclass` without explicit arguments
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
-p Graduate.new('Joe', 2028)
-p UnderGraduate.new('D', 2023)
-p Junior.new('Sed', 2030)
+derek = Junior.new('Derek', 4)
 
-# If we define an additional class that inherits from `Student` and call `super()` without arguments. An argument error will be raised because `super` invokes a corresponding method in the `method lookup path` with the same amount of arguments. In this case, `initialize` in `Student` requires a `name` and `year` argument which would not be forwarded if we used `super()`.
+p derek.school_name('UCLA') # USC
