@@ -47,104 +47,124 @@ Repeat
     ﹥ false Repeat cycle
     ﹥ true end game message
 =end
-require 'pry'
 
 class GuessingGame
   attr_reader :player
 
-  def initialize(player)
-    @winning_number = rand(1..100)
+  def initialize(player, low, high)
     @player = player
+    @range = [low, high]
+    @range_size = calculate_range(low, high)
   end
 
-  DIFFICULTY = {
-    1 => 14,
-    2 => 7,
-    3 => 2
-  }.freeze
+  def difficulty
+      { 1 => (@range_size + 14),
+        2 => (@range_size + 7),
+        3 => (@range_size + 1),
+      }
+  end
 
   def play
     display_welcome_screen
+    display_quit_option
+    calculate_number
     choose_difficulty
     game_cycle
     check_counter
   end
-
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   private
 
   def quit
     exit
   end
 
+  def calculate_number
+    low, high = [@range.first, @range.last]
+    @winning_number = rand(low..high)
+  end
+
+  def calculate_range(low, high)
+    size_of_range = high - low
+    Math.log2(size_of_range).to_i
+  end
+
   def choose_difficulty
     loop do 
       display_difficulty
       num = player.pick_number
-      next if num > 4 || num == 0
-      break @counter = DIFFICULTY[num]
+      next if num > 4 || num <= 0
+      break @counter = difficulty[num]
     end
   end
-  
+
   def game_cycle
     while @counter > 0
       puts
       puts "You have #{@counter} guesses remaining"
       display_enter_valid_num
-      input = player.pick_number
-      quit if input == -555
-      break display_winner if winning_number?(input)
-      next display_out_of_range if input > 100 || input < 1
-      high_or_low(input)
+      chosen_number = player.pick_number
+      quit if chosen_number == -555
+      break display_winner if winning_number?(chosen_number)
+      next display_out_of_range if chosen_number > @range.last || chosen_number < @range.first
+      high_or_low(chosen_number)
       @counter -= 1
     end
+  end
+
+  def output(message)
+    puts(message)
   end
 
   def check_counter
     display_looser if @counter == 0
   end
-  
+
   def winning_number?(input)
     input.==(@winning_number)
   end
-  
+
   def high_or_low(input)
     return display_too_high if input > @winning_number  
     display_too_low
   end
-  
+
   def display_welcome_screen
-    puts "Welcome to the game #{player.name}!"
+    output "Welcome to the game #{player.name}!"
   end
-  
+
   def display_too_high
-    puts 'Your guess is too high.'
+    output 'Your guess is too high.'
   end
 
   def display_difficulty
-    puts "Choose a Game Difficulty"
-    puts "1: EASY 2: MEDIUM 3: HARD"
+    output "Choose a Game Difficulty"
+    output "1: EASY 2: MEDIUM 3: HARD"
   end
-  
+
   def display_too_low
-    puts 'Your guess is too low.'
+    output 'Your guess is too low.'
   end
-  
+
   def display_out_of_range
-    puts 'Invalid guess.'
+    output 'Invalid guess.'
   end
 
   def display_enter_valid_num
-    puts "Enter a number between 1 and 100:"
+    output "Enter a number between #{@range.first} and #{@range.last}:"
   end
 
   def display_winner
-    puts "That's the number"
-    puts "You won!"
-
+    output "That's the number"
+    output "You won!"
   end
 
   def display_looser
-    puts "You have no more guesses. You lost!"
+    output "You have no more guesses. You lost!"
+  end
+
+  def display_quit_option
+    output "Enter -555 to exit game"
   end
 end
 # Do you think its a good idea to have a `Player` class?
@@ -170,7 +190,7 @@ end
 
 joe = Player.new('Joe')
 
-game = GuessingGame.new(joe)
+game = GuessingGame.new(joe, 501, 1500)
 game.play
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -198,7 +218,7 @@ game.play
 #You won!
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
-# game.play
+game.play
 
 # You have 7 guesses remaining.
 # Enter a number between 1 and 100: 50
