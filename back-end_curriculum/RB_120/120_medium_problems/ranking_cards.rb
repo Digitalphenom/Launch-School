@@ -18,13 +18,33 @@ Modify the class so that each instance returns a corresponding card and displays
 
   # Since we need to get the relative minimum and maximum cards not only of integer values but Strings we must create a rank profile and teach ruby through custom defined `min` and `max` methods how to rank each card when it is encountered.
 
+Further exploration tasks us with adding a rank to each suit so that a 4 of spade outranks a 4 of hearts and so on..:
+  spades => hearts => clubs => diamonds
+
+This can be implemented by incrementing the return value of the rank card with a given suit value. Where a greater suit adds 4 to a given rank and diamonds adds 1.
+  
+
 =end
 
-class Card #< Array
+require 'pry'
+
+class Card
   include Comparable
   attr_reader :rank, :suit
 
+  RANK = {
+    'Jack' => 11,
+    'Queen' => 12,
+    'King' => 13,
+    'Ace' => 14
+  }
 
+  SUIT = {
+    'Diamonds' => 1,
+    'Clubs' => 2,
+    'Hearts' => 3,
+    'Spades' => 4
+  }
 
   def initialize(rank, suit)
     @rank = rank
@@ -38,28 +58,24 @@ class Card #< Array
   #def ==(other)
   #  rank == other.rank && suit == other.suit
   #end
-  
-  def <=>(other)
-    v1 = convert_card(rank)
-    v2 = convert_card(other.rank)
-    v1 <=> v2
-  end
 
-  def convert_card(rank)
-    return 11 if rank == 'Jack'
-    return 12 if rank == 'Queen'
-    return 13 if rank == 'King'
-    return 14 if rank == 'Ace'
-    rank
+  def <=>(other)
+    v1 = RANK.fetch(rank, rank) + SUIT.fetch(suit)
+    v2 = RANK.fetch(other.rank, other.rank) + SUIT.fetch(other.suit)
+    #binding.pry
+    v1 <=> v2
   end
 
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-cards = [Card.new(2, 'Hearts'),
-  Card.new(10, 'Diamonds'),
+cards = [Card.new('Ace', 'Hearts'),
+  Card.new('Ace', 'Diamonds'),
   Card.new('Ace', 'Clubs')]
 puts cards
 # This output is a little confusing but what I believe is happening is that `cards.min` returns the rank and is being compared implicitly with the rank of the other object. The equality method as defined on the return value of `cards.min` is being called and implicitly converts the object so that its compared with the other rank. The default output of 'Rank of Suit' is a byproduct of the to_s method which obscures the underlying mechanics outlined. This is why we can remove the ==() defined on the class unless we want to further specify how cards are compared. Since the instructions stated that the `suits` dont matter, there is no need for further specifying the equality operator.
-puts cards.min == Card.new(2, 'Hearts')
-puts cards.max == Card.new('Ace', 'Hearts')
+p cards.max
+p cards.max == Card.new('Ace', 'Hearts')
+p cards.min == Card.new(2, 'Hearts')
+
+
