@@ -35,6 +35,8 @@ class Board
 
   def unmarked_keys
     @squares.select { |_, sq| sq.unmarked? }.keys
+    binding.pry
+
   end
 
   def full?
@@ -58,12 +60,54 @@ class Board
     nil
   end
 
+#    #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+#    def cpu_places_piece!(brd)
+#     square = nil
+#     
+#     WINNING_LINES.each do |line|
+#       square = find_at_risk_square(line, brd, COMPUTER_MARKER)
+#       break if square
+#     end
+#     
+#     if !square
+#       WINNING_LINES.each do |line|
+#         square = find_at_risk_square(line, brd, PLAYER_MARKER)
+#         break if square
+#       end
+#     end
+#     computer_goes_first(brd, square) if square.nil?
+#     brd[square] = COMPUTER_MARKER
+#   end
+#   
+#   def computer_goes_first(brd, square)
+#     if square.nil? && brd.values_at(5).include?(" ") 
+#       square = find_fifth_square(brd)
+#     else
+#       square = empty_squares(brd).sample
+#     end
+#     brd[square] = COMPUTER_MARKER
+#   end
+# 
+#   def find_at_risk_square(line, brd, marker)
+#     if brd.values_at(*line).count(marker) == 2
+#       brd.select { |k, v| line.include?(k) && v == INITIAL_MARKER }.keys.first
+#     end
+#   end
+# 
+#   def find_fifth_square(brd)
+#     brd.keys[4]
+#   end
+#   #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+
   private
 
   def count_markers(squares)
-    squares.collect(&:marker).count('X') == 3 ||   squares.collect(&:marker).count('O') == 3
+    squares.collect(&:marker).count('X') == 3 || squares.collect(&:marker).count('O') == 3
   end
 end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Square
   INITIAL_MARKER = ' '.freeze
@@ -83,34 +127,49 @@ class Square
   end
 end
 
-class Player
-  attr_accessor :marker, :player_name
-  attr_reader :c_name
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
-  COMPUTER_NAMES = ["Chris Lee", "Tony Robinson", "Owen Cook", "Todd"].sample
+class Player
+  attr_accessor :marker
 
   def initialize(marker)
     @marker = marker
   end
+  
+end
 
-  def display_name_option
-    puts "What is your name?"
-    @player_name = gets.chomp
-    puts "Hey #{player_name} lets get started!"
-  end
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+class Computer < Player
+  COMPUTER_NAMES = ["Chris Lee", "Tony Robinson", "Owen Cook", "Todd"].sample
+  
+  attr_reader :c_name
 
   def c_name
     COMPUTER_NAMES
   end
+
 end
+
+class Human < Player
+  attr_reader :name
+
+  def display_name_option
+    puts "What is your name?"
+    @name = gets.chomp
+    puts "Hey #{name} lets get started!"
+  end
+
+end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class TTTGame
   attr_reader :board, :human, :computer
 
   def initialize
     @board = Board.new
-    @human = Player.new("?")
-    @computer = Player.new("?")
+    @human = Human.new("?")
+    @computer = Computer.new("?")
     @turns = (1..9).to_a.map { |num| num.odd? ? true : false }
   end
 
@@ -123,7 +182,7 @@ class TTTGame
   def main_game
     display_welcome_message
     human.display_name_option
-    display_player_marker_and_prompt_choice
+    choose_marker 
     display_who_moves_first_and_player_option
     display_board
 
@@ -147,29 +206,34 @@ class TTTGame
     display_result
   end
 
-  def display_player_marker_and_prompt_choice
-    display_marker_choice
-    choose_marker
-  end
-
-  def display_marker_choice
-    puts 'Would you like to be X or O or maybe something else hmmm?'
-  end
-
   def choose_marker
-    n = gets.chomp
-    self.human.marker = n
-    if human.marker == "X"
-      self.computer.marker = "O"
-    else
-      self.computer.marker = "X"
+    loop do 
+      puts 'Would you like to be X or O'
+      n = gets.chomp.upcase
+      next unless validate_marker(n)
+
+      self.human.marker = n
+      if human.marker == "X"
+        self.computer.marker = "O"
+      else
+        self.computer.marker = "X"
+      end
+      break
     end
   end
 
+  def validate_marker(n)
+    unless n == 'X' || n == 'O'
+      puts 'Please Enter a Valid Marker' 
+      return false
+    end
+    true
+  end
+
   def display_who_moves_first
-    puts "      Who goes first #{human.player_name} or #{computer.c_name}?"
+    puts "      Who goes first #{human.name} or #{computer.c_name}?"
     puts
-    puts "Press: 1 for #{human.player_name} | 2 for #{computer.c_name}"
+    puts "Press: 1 for #{human.name} | 2 for #{computer.c_name}"
   end
 
   def display_who_moves_first_and_player_option
@@ -200,7 +264,7 @@ class TTTGame
   end
 
   def display_welcome_message
-    puts "Hello#{human.player_name}, welcome to Tic Tac Toe!"
+    puts "Hello#{human.name}, welcome to Tic Tac Toe!"
     puts "Your opponent today will be #{computer.c_name}"
   end
 
@@ -278,6 +342,8 @@ class TTTGame
 
   attr_accessor :turns
 end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 # Start Game
 TTTGame.new.play
