@@ -3,8 +3,14 @@ require "pry"
 
 PROMPT = YAML.load_file('21_prompts.yml')
 
-class Player
-  def initialize
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+class Participant
+  attr_reader :choice
+
+  def initialize()
+    #@name = name
+    @choice = nil
     # what would the "data" or "states" of a Player object entail?
     # maybe cards? a name?
   end
@@ -23,18 +29,26 @@ class Player
   end
 end
 
-class Participant
-  # what goes in here? all the redundant behaviors from Player and Dealer?
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+class Player < Participant
 end
+
+class Dealer < Participant
+  def deal
+  end
+end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Deck
   attr_accessor :user_cards, :dealer_cards, :user_total, :dealer_total
 
   SUITS = [:Diamonds, :Hearts, :Spades, :Clubs]
-  VALUES = [:Queen, :Jack, :King, :Ace]
+  RANKS = [:Queen, :Jack, :King, :Ace]
 
   def initialize
-    @deck = SUITS.map { |suit| [suit, [(2..10).to_a ,VALUES].flatten] }.to_h
+    @deck = SUITS.map { |suit| [suit, [(2..10).to_a ,RANKS].flatten] }.to_h
     @user_cards = []
     @dealer_cards = []
     @user_card_state = nil
@@ -71,6 +85,8 @@ class Deck
 
 end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class Card
   attr_reader :player_cards
 
@@ -94,8 +110,10 @@ class Card
 
 end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class Game
-  attr_reader :deck
+  attr_reader :deck, :player
 
   def initialize
     @deck = Deck.new
@@ -109,6 +127,13 @@ class Game
 
   def clear_screen
     system "clear"
+  end
+
+  def hit_or_stay
+    puts
+    puts PROMPT["hit_or_stay"]
+    puts PROMPT["options"]
+    @choice = gets.chomp
   end
 
   def display_welcome_message
@@ -128,15 +153,6 @@ class Game
     gets.chomp
   end
 
-  def hit_or_stay
-    puts
-    puts PROMPT["hit_or_stay"]
-    puts PROMPT["options"]
-  end
-
-  def hit_or_stay_choice
-    gets.chomp
-  end
 
   def player_turn
     loop do 
@@ -146,8 +162,9 @@ class Game
         clear_screen
         show_initial_cards
       else
-        break
+        dealer.turn
       end
+      break
     end
   end
     # here we prompt the user if he wants to hit or stay and fill in the required logic for each choice.
@@ -163,16 +180,18 @@ class Game
       deck.deal
       show_initial_cards
 
-      player_turn
-      # dealer_turn
+      player_turn()
+      # after dealers turn, check cards and show results
       # show_result
       break
     end
   end
 end
 
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 Game.new.start
 
 #Dealer        Diana
 #[?, 5]      [5, 10]
+
 
