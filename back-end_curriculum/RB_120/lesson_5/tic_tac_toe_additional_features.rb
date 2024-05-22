@@ -1,6 +1,8 @@
 require "pry"
 
 class Board
+  attr_reader :squares
+
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # colums
                   [[1, 5, 9], [3, 5, 7]]
@@ -35,22 +37,67 @@ class Board
 
   def unmarked_keys
     @squares.select { |_, sq| sq.unmarked? }.keys
-    binding.pry
-
   end
 
+  def cpu_places_piece!(human, computer)
+    square = nil
+
+    WINNING_LINES.each do |line|
+      square = attack_or_defend(line, human, computer)
+      break if square
+    end
+    square ? square : fifth_square_or_random()
+  end
+
+  def attack_or_defend(line, hmn, cpu)
+    hsh = {}
+
+    if attack_square?(line, cpu) || defend_square?(line, hmn)
+      hsh = attack_or_defend_line(line) 
+    end
+    hsh.keys.first
+  end
+
+  def attack_or_defend_line(line)
+    @squares.select do |k, v|
+      line.include?(k) && v.marker == " "
+    end
+  end
+
+  def fifth_square_or_random
+    @squares[5].marker == " " ? find_fifth_square() : unmarked_keys.sample
+  end
+
+  def attack_square?(line, computer)
+    count_square?(line, computer)
+  end
+
+  def defend_square?(line, human)
+    count_square?(line, human)
+  end
+
+  def count_square?(line, player)
+    @squares.values_at(*line).select do |sqr|
+      sqr.marker == player.marker
+    end.count == 2
+  end
+
+  def find_fifth_square
+    squares.keys[4]
+  end
+  
   def full?
     unmarked_keys.empty?
   end
-
+  
   def someone_won?
     !!winning_marker
   end
-
+  
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
-
+  
   # returns winning marker or nil
   def winning_marker
     WINNING_LINES.each do |line|
@@ -59,61 +106,19 @@ class Board
     end
     nil
   end
-
-#    #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-#    def cpu_places_piece!(brd)
-#     square = nil
-#     
-#     WINNING_LINES.each do |line|
-#       square = find_at_risk_square(line, brd, COMPUTER_MARKER)
-#       break if square
-#     end
-#     
-#     if !square
-#       WINNING_LINES.each do |line|
-#         square = find_at_risk_square(line, brd, PLAYER_MARKER)
-#         break if square
-#       end
-#     end
-#     computer_goes_first(brd, square) if square.nil?
-#     brd[square] = COMPUTER_MARKER
-#   end
-#   
-#   def computer_goes_first(brd, square)
-#     if square.nil? && brd.values_at(5).include?(" ") 
-#       square = find_fifth_square(brd)
-#     else
-#       square = empty_squares(brd).sample
-#     end
-#     brd[square] = COMPUTER_MARKER
-#   end
-# 
-#   def find_at_risk_square(line, brd, marker)
-#     if brd.values_at(*line).count(marker) == 2
-#       brd.select { |k, v| line.include?(k) && v == INITIAL_MARKER }.keys.first
-#     end
-#   end
-# 
-#   def find_fifth_square(brd)
-#     brd.keys[4]
-#   end
-#   #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
-
+  
   private
-
+  
   def count_markers(squares)
     squares.collect(&:marker).count('X') == 3 || squares.collect(&:marker).count('O') == 3
   end
 end
-
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 class Square
   INITIAL_MARKER = ' '.freeze
 
   attr_accessor :marker
-
+  
   def initialize(marker = INITIAL_MARKER)
     @marker = marker
   end
@@ -126,9 +131,7 @@ class Square
     marker == INITIAL_MARKER
   end
 end
-
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 class Player
   attr_accessor :marker
 
@@ -137,32 +140,25 @@ class Player
   end
   
 end
-
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 class Computer < Player
-  COMPUTER_NAMES = ["Chris Lee", "Tony Robinson", "Owen Cook", "Todd"].sample
-  
-  attr_reader :c_name
+  COMPUTER_NAMES = ["Chris Lee", "Tony Robinson", "Owen Cook", "Your Mother"].sample
 
-  def c_name
+  def name
     COMPUTER_NAMES
   end
-
 end
 
 class Human < Player
   attr_reader :name
 
-  def display_name_option
+  def set_human_name
     puts "What is your name?"
     @name = gets.chomp
     puts "Hey #{name} lets get started!"
   end
-
 end
-
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 class TTTGame
   attr_reader :board, :human, :computer
 
@@ -181,7 +177,7 @@ class TTTGame
 
   def main_game
     display_welcome_message
-    human.display_name_option
+    human.set_human_name
     choose_marker 
     display_who_moves_first_and_player_option
     display_board
@@ -231,9 +227,9 @@ class TTTGame
   end
 
   def display_who_moves_first
-    puts "      Who goes first #{human.name} or #{computer.c_name}?"
+    puts "      Who goes first #{human.name} or #{computer.name}?"
     puts
-    puts "Press: 1 for #{human.name} | 2 for #{computer.c_name}"
+    puts "Press: 1 for #{human.name} | 2 for #{computer.name}"
   end
 
   def display_who_moves_first_and_player_option
@@ -265,7 +261,7 @@ class TTTGame
 
   def display_welcome_message
     puts "Hello#{human.name}, welcome to Tic Tac Toe!"
-    puts "Your opponent today will be #{computer.c_name}"
+    puts "Your opponent today will be #{computer.name}"
   end
 
   def display_goodbye_message
@@ -294,7 +290,16 @@ class TTTGame
   end
 
   def computer_moves
-    board[board.unmarked_keys.sample] = computer.marker
+      # This returns the positional square that we want to assign a marker to. The return value of get_computer_piece should be dynamic.
+      # offensive
+      # defensive
+      # The fifth square
+      # random
+    board[get_computer_piece()] = computer.marker
+  end
+
+  def get_computer_piece
+    board.cpu_places_piece!(human,computer)
   end
 
   def display_result
@@ -323,7 +328,7 @@ class TTTGame
   end
 
   def display_board
-    puts "You're #{human.marker}. #{computer.c_name} is #{computer.marker}"
+    puts "You're #{human.marker}. #{computer.name} is #{computer.marker}"
     puts
     board.draw_board
     puts
