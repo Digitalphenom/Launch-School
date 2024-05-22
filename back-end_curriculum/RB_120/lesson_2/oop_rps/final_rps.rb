@@ -313,24 +313,37 @@ class RPSGame
 
   def start_game
     display_ask_for_rounds
-    total = total_rounds
+    total = (total_rounds.to_i + 1)
     loop do
       make_choice(round)
       add_moves
       display_stats
       self.round += 1
-      break if round == (total.to_i + 1)
+      break if round == (total)
+    end
+  end
+
+  def reset_stats
+    self.round = 1
+    self.human_score = 0
+    self.computer_score = 0
+  end
+
+  def core_game
+    loop do 
+      start_game
+      display_game_winner
+      break unless play_again?
+      reset_stats
     end
   end
 
   def play
     display_welcome_message
-    start_game
-    display_game_winner
-    RPSGame.new.play if play_again?
+    core_game
     display_goodbye_message(human)
   end
-
+ 
   protected
 
   attr_accessor :human, :computer, :human_score, :computer_score, :round
