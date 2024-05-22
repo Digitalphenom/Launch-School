@@ -166,7 +166,7 @@ class TTTGame
     @board = Board.new
     @human = Human.new("?")
     @computer = Computer.new("?")
-    @turns = (1..9).to_a.map { |num| num.odd? ? true : false }
+    @turns = (1..9).to_a.map { |num| num.odd? }
   end
 
   def play
@@ -256,7 +256,7 @@ class TTTGame
   end
 
   def reset_turns
-    @turns = (1..9).to_a.map { |num| num.odd? ? true : false }
+    @turns = (1..9).to_a.map { |num| num.odd? }
   end
 
   def display_welcome_message
