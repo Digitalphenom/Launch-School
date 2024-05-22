@@ -1,48 +1,9 @@
-require "pry"
 
-class Board
-  attr_reader :squares
-
-  WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
-                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # colums
-                  [[1, 5, 9], [3, 5, 7]]
-
-  def initialize
-    @squares = {}
-    (1..9).each { |key| @squares[key] = Square.new }
-  end
-
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
-  def draw_board
-    puts '         |       |'
-    puts "      #{@squares[1]}  |   #{@squares[2]}   |  #{@squares[3]}"
-    puts '         |       |'
-    puts '   ------+-------+------'
-    puts '         |       |'
-    puts "      #{@squares[4]}  |   #{@squares[5]}   |  #{@squares[6]}"
-    puts '         |       |'
-    puts '   ------+-------+------'
-    puts '         |       |'
-    puts "      #{@squares[7]}  |   #{@squares[8]}   |  #{@squares[9]}"
-    puts '         |       |'
-    puts
-  end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
-
-  def []=(key, marker)
-    @squares[key].marker = marker
-  end
-
-  def unmarked_keys
-    @squares.select { |_, sq| sq.unmarked? }.keys
-  end
-
+module Chooseable
   def cpu_places_piece!(human, computer)
     square = nil
 
-    WINNING_LINES.each do |line|
+    Board::WINNING_LINES.each do |line|
       square = attack_or_defend(line, human, computer)
       break if square
     end
@@ -84,6 +45,79 @@ class Board
 
   def find_fifth_square
     squares.keys[4]
+  end
+end
+
+module Playerable
+  class Player
+    attr_accessor :marker
+
+    def initialize(marker)
+      @marker = marker
+    end
+
+  end
+  #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+  class Computer < Player
+    COMPUTER_NAMES = ["Chris Lee", "Tony Robinson", "Owen Cook", "Your Mother"].sample
+
+    def name
+      COMPUTER_NAMES
+    end
+  end
+
+  class Human < Player
+    attr_reader :name
+
+    def set_human_name
+      puts "What is your name?"
+      @name = gets.chomp
+      puts "Hey #{name} lets get started!"
+    end
+  end
+end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+class Board
+  attr_reader :squares
+
+  WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
+  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # colums
+  [[1, 5, 9], [3, 5, 7]]
+  
+  include Chooseable
+
+  def initialize
+    @squares = {}
+    (1..9).each { |key| @squares[key] = Square.new }
+  end
+
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
+  def draw_board
+    puts '         |       |'
+    puts "      #{@squares[1]}  |   #{@squares[2]}   |  #{@squares[3]}"
+    puts '         |       |'
+    puts '   ------+-------+------'
+    puts '         |       |'
+    puts "      #{@squares[4]}  |   #{@squares[5]}   |  #{@squares[6]}"
+    puts '         |       |'
+    puts '   ------+-------+------'
+    puts '         |       |'
+    puts "      #{@squares[7]}  |   #{@squares[8]}   |  #{@squares[9]}"
+    puts '         |       |'
+    puts
+  end
+  # rubocop:enable Metrics/AbcSize
+  # rubocop:enable Metrics/MethodLength
+
+  def []=(key, marker)
+    @squares[key].marker = marker
+  end
+
+  def unmarked_keys
+    @squares.select { |_, sq| sq.unmarked? }.keys
   end
   
   def full?
@@ -131,44 +165,18 @@ class Square
     marker == INITIAL_MARKER
   end
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-class Player
-  attr_accessor :marker
 
-  def initialize(marker)
-    @marker = marker
-  end
-  
-end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-class Computer < Player
-  COMPUTER_NAMES = ["Chris Lee", "Tony Robinson", "Owen Cook", "Your Mother"].sample
-
-  def name
-    COMPUTER_NAMES
-  end
-end
-
-class Human < Player
-  attr_reader :name
-
-  def set_human_name
-    puts "What is your name?"
-    @name = gets.chomp
-    puts "Hey #{name} lets get started!"
-  end
-end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 class TTTGame
   attr_reader :board, :human, :computer
 
   def initialize
     @board = Board.new
-    @human = Human.new("?")
-    @computer = Computer.new("?")
+    @human = Playerable::Human.new("?")
+    @computer = Playerable::Computer.new("?")
     @turns = (1..9).to_a.map { |num| num.odd? }
   end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def play
     clear
     main_game
@@ -192,6 +200,7 @@ class TTTGame
     end
   end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def player_move
     loop do
       current_player_moves
@@ -344,6 +353,7 @@ class TTTGame
     puts 'Let\'s play again'
     puts
   end
+  private
 
   attr_accessor :turns
 end
