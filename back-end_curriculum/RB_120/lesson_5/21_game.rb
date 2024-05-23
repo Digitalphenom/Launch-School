@@ -8,6 +8,7 @@ class Participant
   attr_reader :choice
 
   def initialize
+    @name = 'Dealer'
     @cards = []
     @total = 0
   end
@@ -26,6 +27,10 @@ class Participant
 
   def busted?
     @total > 21
+  end
+
+  def to_s
+    @name
   end
 end
 
@@ -180,9 +185,11 @@ class Game
   def evaluate_cards
     if dealer.busted?
       display_busted(dealer)
-      return winner(player) 
-    elsif  player.total > dealer.total
-      return winner(player) 
+      winner(player) 
+    elsif player.total > dealer.total
+      winner(player) 
+    elsif player.total == dealer.total
+      tie_game
     else
       winner(dealer)
     end
@@ -199,24 +206,26 @@ class Game
   end
 
   def dealer_turn
+    puts "Dealers Turn.."
     until dealer.total >= 17
-      puts "Dealer Hits"
       dealer.hit << deck.draw
-      clear_screen
-      cards_screen
+      puts
+      puts "The Dealer Hits!" 
+      puts "Dealer Cards"
+      print "#{dealer.hidden_cards}"
     end
   end
 
+  def tie_game
+    puts "Its a tie"
+  end
+
   def winner(participant)
-    if participant.class == Player
-      puts "You Win The Game" 
-    else
-      puts "You Lose The Game"
-    end
+    puts "#{participant} Wins The Game" 
   end
   
   def display_busted(participant)
-    puts "BUSTED! #{participant} lose.."
+    puts "BUSTED! #{participant} loses.."
     puts
   end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -224,7 +233,6 @@ class Game
     player_turn
     return display_busted(player) if player.busted?
     puts 
-    puts "Dealers Turn.."
     dealer_turn
 
     evaluate_cards
