@@ -253,7 +253,7 @@ class Game
   def start
     display_welcome_message
     ready_to_play
-
+    return display_busted(player) if player.busted?
     play_game
     dealer_cards
   end
