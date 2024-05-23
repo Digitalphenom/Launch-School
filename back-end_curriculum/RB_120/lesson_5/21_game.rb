@@ -16,6 +16,10 @@ class Participant
     # maybe cards? a name?
   end
 
+  def get_total
+    cards.map { |card| Card::RANK.fetch(card.rank,card.rank)}.sum
+  end
+
   def hit
   end
 
@@ -33,10 +37,23 @@ end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Player < Participant
+  attr_reader :name
+
+  def initialize(name)
+    @name = name
+    super()
+  end
+
   def turn?
     @turn = true
     false if stay
   end
+  def set_name(name)
+    self.name = name
+  end
+
+  private
+  attr_writer :name
 end
 
 class Dealer < Participant
@@ -103,7 +120,7 @@ class Game
 
   def initialize
     @deck = Deck.new
-    @player = Player.new
+    @player = Player.new("?")
     @dealer = Dealer.new
   end
 
@@ -112,14 +129,14 @@ class Game
   end
 
   def get_name
-    gets.chomp
+    player.set_name(gets.chomp)
   end
 
   def display_welcome_message
     puts PROMPT["welcome"]
     puts PROMPT["name"]
-    name = get_name
-    puts "Ok #{name} heres the deal.."
+    get_name
+    puts PROMPT["instructions"]
   end
 
   def hit_or_stay
@@ -130,13 +147,13 @@ class Game
   end
 
   def display_all_cards
-    puts "Player Cards:"
+    puts "#{player.name} Cards:"
     puts "#{display_cards(player)}"
-    puts "Your running total is: #{}"
+    puts "Your running total is: #{player.get_total}"
     puts "------------------------"
     puts "Dealer Cards:"
     puts "#{display_cards(dealer)}"
-    puts "Dealer total: #{}" 
+    puts "Dealer total: #{dealer.get_total}" 
   end
 
   def display_cards(participant)
