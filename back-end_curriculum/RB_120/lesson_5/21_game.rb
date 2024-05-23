@@ -5,7 +5,7 @@ PROMPT = YAML.load_file('21_prompts.yml')
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Participant
-  attr_reader :choice, :cards
+  attr_reader :choice
 
   def initialize()
     #@name = name
@@ -16,22 +16,23 @@ class Participant
     # maybe cards? a name?
   end
 
-  def get_total
-    cards.map { |card| Card::RANK.fetch(card.rank,card.rank)}.sum
+  def total
+    @total = hit.map { |card| Card::RANK.fetch(card.rank,card.rank)}.sum
   end
 
   def hit
+    @cards
   end
 
   def stay
+    false
   end
 
   def busted?
+    @total > 21
   end
 
-  def total
-    # definitely looks like we need to know about "cards" to produce some total
-  end
+
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -44,10 +45,6 @@ class Player < Participant
     super()
   end
 
-  def turn?
-    @turn = true
-    false if stay
-  end
 
   def set_name(name)
     self.name = name
@@ -58,6 +55,11 @@ class Player < Participant
 end
 
 class Dealer < Participant
+
+  def hidden_cards
+    puts @cards.last
+  end
+
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -108,9 +110,9 @@ class Card
     v1 <=> v2
   end
 
-#  def to_s
-#    "#{rank} of #{suit}"
-#  end
+  def to_s
+    "#{rank} of #{suit}"
+  end
 
 end
 
@@ -140,28 +142,31 @@ class Game
     puts PROMPT["instructions"]
   end
 
-  def hit_or_stay
+  def hit_or_stay_choice
     puts
     puts PROMPT["hit_or_stay"]
     puts PROMPT["options"]
-    @choice = gets.chomp
+    gets.chomp
   end
 
-  def display_all_cards
+  def display_cards
     puts "Dealer Cards:"
-    "#{display_cards(dealer)}"
+    "#{dealer.hidden_cards}"
     puts "--------------------"
     puts "#{player.name} Cards:"
-    puts "#{display_cards(player)}"
-    puts "Your running total is: #{player.get_total}"
+    puts "#{display_all_cards(player)}"
+    puts "Your running total is: #{player.total}"
   end
 
-  def display_cards(participant)
-    if participant?(participant)
-      participant.cards.each { |card| puts "- #{card.rank} of #{card.suit}"}
-    else
-      puts "#{dealer.cards.last.rank} of #{dealer.cards.last.suit}"
-    end
+  def display_all_dealer_cards
+    puts "Dealer Cards:"
+    "#{display_all_cards(dealer)}"
+    puts "Dealer Total:"
+    puts "#{dealer.total}"
+  end
+
+  def display_all_cards(participant)
+    participant.hit.each { |card| puts "- #{card.rank} of #{card.suit}"}
     nil
   end
 
@@ -169,54 +174,93 @@ class Game
     participant.class == Player
   end
 
-  def start_game
+  def start_choice
     puts
     puts PROMPT["start_game"]
     gets.chomp
   end
 
-  def player_turn
-    loop do 
-      hit_or_stay
-      if hit_or_stay_choice == "1"
-        deck.deal
-        clear_screen
-        show_initial_cards
-      else
-        dealer.turn
-      end
-      break
-    end
+  def turn(participant)
+    deal_card(participant)
+    clear_screen
+    display_cards
   end
 
-  def deal_card
-    player.cards << deck.deal if player.turn?
-    dealer.cards << deck.deal
+  def deal_card(participant)
+    return player.hit << deck.deal if participant?(participant)
+    dealer_turn
+  end
+
+  def dealer_turn
+    until dealer.total >= 17
+      dealer.hit << deck.deal
+    end
   end
 
   def init_cards
-    2.times { player.cards << deck.deal }
-    2.times { dealer.cards << deck.deal }
+    2.times { player.hit << deck.deal }
+    2.times { dealer.hit << deck.deal }
   end
-    # here we prompt the user if he wants to hit or stay and fill in the required logic for each choice.
-    # if stay then we pass the turn to dealer
-    # if HIT then we add 1 card to the pile and reflect that to the screen by updating stats.
 
-  def start
-    display_welcome_message
+  def evaluate_cards
+    if dealer.busted? || player.total > dealer.total
+      display_all_dealer_cards
+      return winner(player) 
+    else
+      winner(dealer)
+    end
+  end
+
+  def winner(participant)
+    if participant.class == Player
+      puts "You Win The Game" 
+    else
+      puts "You Lose The Game"
+    end
+  end
+  
+  def display_busted
+    puts "BUSTED! You lose.." #if player.to
+  end
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+  def play_game
     loop do 
-      n = start_game
-      next  unless n == "1"
+      choice = hit_or_stay_choice
+      turn(player) if choice == '1'
+      break if player.busted? || choice == '2'
+    end
+    return display_busted if player.busted?
+    puts "Dealers Turn.."
+    loop do
+      #binding.pry
+      turn(dealer)
+      break 
+    end
+    evaluate_cards
+    puts
+    display_all_dealer_cards
+    # after dealers turn, check cards and show results
+    # show_result
+  end
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+  def ready_to_play
+    loop do 
+      choice = start_choice
+      next unless choice == "1"
       clear_screen
       init_cards
-      display_all_cards
-
-      player_turn()
-      # after dealers turn, check cards and show results
-      # show_result
+      display_cards
       break
     end
   end
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+  def start
+    display_welcome_message
+    ready_to_play
+
+    play_game
+  end
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 end
 
 #◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
