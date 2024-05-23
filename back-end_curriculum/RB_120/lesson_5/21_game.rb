@@ -48,6 +48,7 @@ class Player < Participant
     @turn = true
     false if stay
   end
+
   def set_name(name)
     self.name = name
   end
@@ -147,18 +148,25 @@ class Game
   end
 
   def display_all_cards
+    puts "Dealer Cards:"
+    "#{display_cards(dealer)}"
+    puts "--------------------"
     puts "#{player.name} Cards:"
     puts "#{display_cards(player)}"
     puts "Your running total is: #{player.get_total}"
-    puts "------------------------"
-    puts "Dealer Cards:"
-    puts "#{display_cards(dealer)}"
-    puts "Dealer total: #{dealer.get_total}" 
   end
 
   def display_cards(participant)
-    participant.cards.each { |card| puts "- #{card.rank} of #{card.suit}"}
+    if participant?(participant)
+      participant.cards.each { |card| puts "- #{card.rank} of #{card.suit}"}
+    else
+      puts "#{dealer.cards.last.rank} of #{dealer.cards.last.suit}"
+    end
     nil
+  end
+
+  def participant?(participant)
+    participant.class == Player
   end
 
   def start_game
