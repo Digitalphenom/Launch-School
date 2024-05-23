@@ -7,13 +7,9 @@ PROMPT = YAML.load_file('21_prompts.yml')
 class Participant
   attr_reader :choice
 
-  def initialize()
-    #@name = name
+  def initialize
     @cards = []
     @total = 0
-    #@choice = nil
-    # what would the "data" or "states" of a Player object entail?
-    # maybe cards? a name?
   end
 
   def total
@@ -31,8 +27,6 @@ class Participant
   def busted?
     @total > 21
   end
-
-
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -44,7 +38,6 @@ class Player < Participant
     @name = name
     super()
   end
-
 
   def set_name(name)
     self.name = name
@@ -80,11 +73,10 @@ class Deck
   end
 
   # If we are to more the real world version of cards, we would give the ability to `deal` to the dealer. However in our program this would require the dealer to collaborate with the deck in order to `know` the deck, which creates an additional `dependency`. For this reason it might be best to leave the dealing of cards to the `Deck`.
-  def deal
+  def draw
     generate_deck if deck.empty?
     deck.pop
   end
-
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -117,7 +109,7 @@ class Card
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-# The game class is responsible for aspects of the game that relate to playing and display game actions.
+
 class Game
   attr_reader :deck, :player, :dealer
 
@@ -149,20 +141,20 @@ class Game
     gets.chomp
   end
 
-  def display_cards
+  def cards_screen
     puts "Dealer Cards:"
     "#{dealer.hidden_cards}"
     puts "--------------------"
     puts "#{player.name} Cards:"
     puts "#{display_all_cards(player)}"
     puts "Your running total is: #{player.total}"
+    puts
   end
 
-  def display_all_dealer_cards
+  def dealer_cards
     puts "Dealer Cards:"
     "#{display_all_cards(dealer)}"
-    puts "Dealer Total:"
-    puts "#{dealer.total}"
+    puts "Total: #{dealer.total}"
   end
 
   def display_all_cards(participant)
@@ -180,34 +172,38 @@ class Game
     gets.chomp
   end
 
-  def turn(participant)
-    deal_card(participant)
-    clear_screen
-    display_cards
+  def init_cards
+    2.times { player.hit << deck.draw }
+    2.times { dealer.hit << deck.draw }
   end
 
-  def deal_card(participant)
-    return player.hit << deck.deal if participant?(participant)
-    dealer_turn
+  def evaluate_cards
+    if dealer.busted?
+      display_busted(dealer)
+      return winner(player) 
+    elsif  player.total > dealer.total
+      return winner(player) 
+    else
+      winner(dealer)
+    end
+  end
+
+  def player_turn
+    loop do 
+      choice = hit_or_stay_choice
+      player.hit << deck.draw if choice == '1'
+      clear_screen
+      cards_screen
+      break if player.busted? || choice == '2'
+    end
   end
 
   def dealer_turn
     until dealer.total >= 17
-      dealer.hit << deck.deal
-    end
-  end
-
-  def init_cards
-    2.times { player.hit << deck.deal }
-    2.times { dealer.hit << deck.deal }
-  end
-
-  def evaluate_cards
-    if dealer.busted? || player.total > dealer.total
-      display_all_dealer_cards
-      return winner(player) 
-    else
-      winner(dealer)
+      puts "Dealer Hits"
+      dealer.hit << deck.draw
+      clear_screen
+      cards_screen
     end
   end
 
@@ -219,28 +215,20 @@ class Game
     end
   end
   
-  def display_busted
-    puts "BUSTED! You lose.." #if player.to
+  def display_busted(participant)
+    puts "BUSTED! #{participant} lose.."
+    puts
   end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def play_game
-    loop do 
-      choice = hit_or_stay_choice
-      turn(player) if choice == '1'
-      break if player.busted? || choice == '2'
-    end
-    return display_busted if player.busted?
+    player_turn
+    return display_busted(player) if player.busted?
+    puts 
     puts "Dealers Turn.."
-    loop do
-      #binding.pry
-      turn(dealer)
-      break 
-    end
+    dealer_turn
+
     evaluate_cards
     puts
-    display_all_dealer_cards
-    # after dealers turn, check cards and show results
-    # show_result
   end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def ready_to_play
@@ -249,7 +237,7 @@ class Game
       next unless choice == "1"
       clear_screen
       init_cards
-      display_cards
+      cards_screen
       break
     end
   end
@@ -259,6 +247,7 @@ class Game
     ready_to_play
 
     play_game
+    dealer_cards
   end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 end
