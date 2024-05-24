@@ -6,6 +6,7 @@ PROMPT = YAML.load_file('21_prompts.yml')
 
 class Participant
   attr_reader :choice
+  attr_writer :cards, :total
 
   def initialize
     @name = 'Dealer'
@@ -21,10 +22,6 @@ class Participant
     @cards
   end
 
-  def stay
-    false
-  end
-
   def busted?
     @total > 21
   end
@@ -32,6 +29,12 @@ class Participant
   def to_s
     @name
   end
+
+  def reset_stats
+    self.total = 0
+    self.cards = []
+  end
+
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -228,6 +231,22 @@ class Game
     puts "BUSTED! #{participant} loses.."
     puts
   end
+
+  def play_again?
+    puts
+    puts PROMPT["play_again?"]
+    puts PROMPT["play_again_choice"]
+    gets.chomp
+  end
+
+  def exit_screen
+    puts PROMPT["exit_screen"]
+  end
+
+  def reset_stats
+    player.reset_stats
+    dealer.reset_stats
+  end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def play_game
     player_turn
@@ -252,18 +271,21 @@ class Game
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def start
     display_welcome_message
-    ready_to_play
-    return display_busted(player) if player.busted?
-    play_game
-    dealer_cards
+    loop do 
+      ready_to_play
+      return display_busted(player) if player.busted?
+      play_game
+      dealer_cards
+      break unless play_again? == "1"
+      reset_stats
+      clear_screen
+    end
+    exit_screen
   end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 end
 
-#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 Game.new.start
 
-#Dealer        Diana
-#[?, 5]      [5, 10]
 
 
