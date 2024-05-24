@@ -3,7 +3,11 @@ require "pry"
 
 PROMPT = YAML.load_file('21_prompts.yml')
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
+module Formatable
+  def new_line
+    puts
+  end
+end
 class Participant
   attr_reader :choice
   attr_writer :cards, :total
@@ -120,6 +124,7 @@ end
 
 class Game
   attr_reader :deck, :player, :dealer
+  include Formatable
 
   def initialize
     @deck = Deck.new
@@ -135,7 +140,7 @@ class Game
     player.set_name(gets.chomp)
   end
 
-  def display_welcome_message
+  def welcome_message
     puts PROMPT["welcome"]
     puts PROMPT["name"]
     get_name
@@ -143,7 +148,7 @@ class Game
   end
 
   def hit_or_stay_choice
-    puts
+    new_line
     puts PROMPT["hit_or_stay"]
     puts PROMPT["options"]
     gets.chomp
@@ -156,7 +161,7 @@ class Game
     puts "#{player.name} Cards:"
     puts "#{display_all_cards(player)}"
     puts "Your running total is: #{player.total}"
-    puts
+    new_line
   end
 
   def dealer_cards
@@ -175,19 +180,23 @@ class Game
   end
 
   def start_choice
-    puts
+    new_line
     puts PROMPT["start_game"]
     gets.chomp
   end
 
+  def participant_hit(participant)
+    participant.hit << deck.draw
+  end
+
   def init_cards
-    2.times { player.hit << deck.draw }
-    2.times { dealer.hit << deck.draw }
+    2.times { participant_hit(player)}
+    2.times { participant_hit(dealer) }
   end
 
   def evaluate_cards
     if dealer.busted?
-      display_busted(dealer)
+      busted(dealer)
       winner(player) 
     elsif player.total > dealer.total
       winner(player) 
@@ -201,22 +210,26 @@ class Game
   def player_turn
     loop do 
       choice = hit_or_stay_choice
-      player.hit << deck.draw if choice == '1'
+      participant_hit(player) if choice == '1'
       clear_screen
       cards_screen
-      break if player.busted? || choice == '2'
+      break busted(player) if player.busted? || choice == '2'
     end
   end
 
   def dealer_turn
+    count = 0
     puts "Dealers Turn.."
     until dealer.total >= 17
-      dealer.hit << deck.draw
-      puts
-      puts "The Dealer Hits!" 
+      count += 1
+      participant_hit(dealer)
+      new_line
+      puts count == 1 ? "The Dealer Hits!" : "The Dealer Hits AGAIN!!"
       puts "Dealer Cards"
-      print "#{dealer.hidden_cards}"
+      puts "#{dealer.hidden_cards}"
     end
+    new_line
+    puts "The Dealer stays" unless dealer.busted?
   end
 
   def tie_game
@@ -227,13 +240,13 @@ class Game
     puts "#{participant} Wins The Game" 
   end
   
-  def display_busted(participant)
+  def busted(participant)
     puts "BUSTED! #{participant} loses.."
-    puts
+    new_line
   end
 
   def play_again?
-    puts
+    new_line
     puts PROMPT["play_again?"]
     puts PROMPT["play_again_choice"]
     gets.chomp
@@ -247,33 +260,36 @@ class Game
     player.reset_stats
     dealer.reset_stats
   end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-  def play_game
-    player_turn
-    return display_busted(player) if player.busted?
-    puts 
-    dealer_turn
 
-    evaluate_cards
-    puts
+  def set_initial_cards
+    clear_screen
+    init_cards
+    cards_screen
   end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-  def ready_to_play
+
+  def ready_screen
     loop do 
       choice = start_choice
       next unless choice == "1"
-      clear_screen
-      init_cards
-      cards_screen
+      set_initial_cards
       break
     end
   end
+
+  def play_game
+    player_turn
+    return busted(player) if player.busted?
+    new_line 
+    dealer_turn
+    evaluate_cards
+    new_line
+  end
+
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def start
-    display_welcome_message
+    welcome_message
     loop do 
-      ready_to_play
-      return display_busted(player) if player.busted?
+      ready_screen
       play_game
       dealer_cards
       break unless play_again? == "1"
@@ -284,6 +300,8 @@ class Game
   end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 end
+# What happens if we have a tie or bust on the initial cards
+# What is the criteria for alternating ACE cards 11/1
 
 Game.new.start
 
