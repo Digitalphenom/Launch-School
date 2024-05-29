@@ -1,4 +1,4 @@
-
+require 'pry'
 module Chooseable
   def cpu_places_piece!(human, computer)
     square = nil
@@ -7,14 +7,14 @@ module Chooseable
       square = attack_or_defend(line, human, computer)
       break if square
     end
-    square ? square : fifth_square_or_random()
+    square || fifth_square_or_random()
   end
 
   def attack_or_defend(line, hmn, cpu)
     hsh = {}
 
     if attack_square?(line, cpu) || defend_square?(line, hmn)
-      hsh = attack_or_defend_line(line) 
+      hsh = attack_or_defend_line(line)
     end
     hsh.keys.first
   end
@@ -55,11 +55,13 @@ module Playerable
     def initialize(marker)
       @marker = marker
     end
-
   end
-  #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
   class Computer < Player
-    COMPUTER_NAMES = ["Chris Lee", "Tony Robinson", "Owen Cook", "Your Mother"].sample
+    COMPUTER_NAMES = ["Chris Lee",
+                      "Tony Robinson",
+                      "Owen Cook",
+                      "Your Mother"].sample
 
     def name
       COMPUTER_NAMES
@@ -77,15 +79,13 @@ module Playerable
   end
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 class Board
   attr_reader :squares
 
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
-  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # colums
-  [[1, 5, 9], [3, 5, 7]]
-  
+                  [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # colums
+                  [[1, 5, 9], [3, 5, 7]]
+
   include Chooseable
 
   def initialize
@@ -119,19 +119,19 @@ class Board
   def unmarked_keys
     @squares.select { |_, sq| sq.unmarked? }.keys
   end
-  
+
   def full?
     unmarked_keys.empty?
   end
-  
+
   def someone_won?
     !!winning_marker
   end
-  
+
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
-  
+
   # returns winning marker or nil
   def winning_marker
     WINNING_LINES.each do |line|
@@ -140,19 +140,21 @@ class Board
     end
     nil
   end
-  
+
   private
-  
+
   def count_markers(squares)
-    squares.collect(&:marker).count('X') == 3 || squares.collect(&:marker).count('O') == 3
+    x = squares.collect(&:marker).count('X') == 3
+    o = squares.collect(&:marker).count('O') == 3
+    x || o
   end
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class Square
   INITIAL_MARKER = ' '.freeze
 
   attr_accessor :marker
-  
+
   def initialize(marker = INITIAL_MARKER)
     @marker = marker
   end
@@ -173,34 +175,9 @@ class TTTGame
     @board = Board.new
     @human = Playerable::Human.new("?")
     @computer = Playerable::Computer.new("?")
-    @turns = (1..9).to_a.map { |num| num.odd? }
+    @turns = (1..9).to_a.map(&:odd?)
   end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-  def play
-    clear
-    main_game
-    display_goodbye_message
-  end
-
-  def main_game
-    display_welcome_message
-    human.set_human_name
-    choose_marker 
-    display_who_moves_first_and_player_option
-    display_board
-
-    loop do
-      player_move
-      break unless play_again?
-
-      reset
-      display_play_again_message
-      display_who_moves_first_and_player_option
-    end
-  end
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def player_move
     loop do
       current_player_moves
@@ -212,24 +189,20 @@ class TTTGame
   end
 
   def choose_marker
-    loop do 
+    loop do
       puts 'Would you like to be X or O'
       n = gets.chomp.upcase
       next unless validate_marker(n)
 
-      self.human.marker = n
-      if human.marker == "X"
-        self.computer.marker = "O"
-      else
-        self.computer.marker = "X"
-      end
+      human.marker = n
+      computer.marker = human.marker == "X" ? "O" : "X"
       break
     end
   end
 
   def validate_marker(n)
     unless n == 'X' || n == 'O'
-      puts 'Please Enter a Valid Marker' 
+      puts 'Please Enter a Valid Marker'
       return false
     end
     true
@@ -252,10 +225,10 @@ class TTTGame
   end
 
   def whos_turn(choice)
-    choice == '2' ? toggle_turn : @turns
+    choice == '2' ? toggle_turn! : @turns
   end
 
-  def toggle_turn
+  def toggle_turn!
     @turns.shift
     @turns << false
   end
@@ -265,7 +238,7 @@ class TTTGame
   end
 
   def reset_turns
-    @turns = (1..9).to_a.map { |num| num.odd? }
+    @turns = (1..9).to_a.map(&:odd?)
   end
 
   def display_welcome_message
@@ -299,16 +272,11 @@ class TTTGame
   end
 
   def computer_moves
-      # This returns the positional square that we want to assign a marker to. The return value of get_computer_piece should be dynamic.
-      # offensive
-      # defensive
-      # The fifth square
-      # random
-    board[get_computer_piece()] = computer.marker
+    board[computer_piece()] = computer.marker
   end
 
-  def get_computer_piece
-    board.cpu_places_piece!(human,computer)
+  def computer_piece
+    board.cpu_places_piece!(human, computer)
   end
 
   def display_result
@@ -329,7 +297,7 @@ class TTTGame
     loop do
       puts 'Would you like to play again? (y/n)'
       answer = gets.chomp.downcase
-      break if %w[y n].include?(answer)
+      break if %w(y n).include?(answer)
 
       puts 'Sorry, must be y or n'
     end
@@ -353,12 +321,35 @@ class TTTGame
     puts 'Let\'s play again'
     puts
   end
+
+  def play
+    clear
+    start_screen
+    start_game
+    display_goodbye_message
+  end
+
+  def start_screen
+    display_welcome_message
+    human.set_human_name
+    choose_marker
+    display_who_moves_first_and_player_option
+    display_board
+  end
+
+  def start_game
+    loop do
+      player_move
+      break unless play_again?
+      reset
+      display_play_again_message
+      display_who_moves_first_and_player_option
+    end
+  end
+
   private
 
   attr_accessor :turns
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
-# Start Game
 TTTGame.new.play
