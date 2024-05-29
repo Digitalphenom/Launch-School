@@ -1,4 +1,3 @@
-require 'pry'
 module Chooseable
   def cpu_places_piece!(human, computer)
     square = nil
