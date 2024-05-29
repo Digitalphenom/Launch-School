@@ -10,12 +10,10 @@ module Chooseable
   end
 
   def attack_or_defend(line, hmn, cpu)
-    hsh = {}
-
     if attack_square?(line, cpu) || defend_square?(line, hmn)
-      hsh = attack_or_defend_line(line)
+      return attack_or_defend_line(line).keys.first
     end
-    hsh.keys.first
+    nil
   end
 
   def attack_or_defend_line(line)
