@@ -1,9 +1,6 @@
-require "pry"
 require "yaml"
 
 MESSAGES = YAML.load_file('final_prompt.yml')
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 module SpecialMoves
   def self.r2d2
@@ -27,8 +24,6 @@ module SpecialMoves
   end
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 module Formatable
   def new_line
     puts
@@ -46,8 +41,6 @@ module Formatable
     puts "  #{n}"
   end
 end
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Move
   VALUES = { 1 => "rock", 2 => "paper", 3 => "scissors", 4 => "lizard", 5 =>
@@ -116,8 +109,6 @@ class Move
   end
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 class Player
   attr_accessor :name, :all_moves, :move
 
@@ -137,8 +128,6 @@ class Player
     @all_moves
   end
 end
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Human < Player
   def set_name
@@ -184,8 +173,6 @@ class Computer < Player
   end
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-
 class RPSGame
   include Formatable
 
@@ -215,7 +202,7 @@ class RPSGame
 
   def check_winning_move
     return @winner = 'tie' if human.move.value == computer.move.value
-    human.move > computer.move ? @winner = true : @winner = false
+    @winner = human.move > computer.move
   end
 
   def display_winner_and_score
@@ -231,7 +218,7 @@ class RPSGame
     end
     display_score()
   end
-  
+
   def display_tie
     special_output("Its a tie!")
     display_score()
@@ -330,7 +317,7 @@ class RPSGame
   end
 
   def core_game
-    loop do 
+    loop do
       start_game
       display_game_winner
       break unless play_again?
@@ -343,11 +330,10 @@ class RPSGame
     core_game
     display_goodbye_message(human)
   end
- 
+
   protected
 
   attr_accessor :human, :computer, :human_score, :computer_score, :round
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 RPSGame.new.play
