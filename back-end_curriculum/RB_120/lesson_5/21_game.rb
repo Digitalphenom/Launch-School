@@ -1,25 +1,41 @@
 require "yaml"
-require "pry"
 
 PROMPT = YAML.load_file('21_prompts.yml')
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 module Formatable
   def new_line
     puts
   end
 end
+
+module CardSwapable
+  def eleven_or_one!
+    total_arr = @card_total[0...@card_total.size - 1]
+
+    @card_total[-1] = 1 if @card_total.last == 11 && total_arr.sum >= 11
+    @card_total
+  end
+end
+
 class Participant
   attr_reader :choice
-  attr_writer :cards, :total
+  attr_writer :cards, :card_total
+
+  include CardSwapable
 
   def initialize
     @name = 'Dealer'
     @cards = []
-    @total = 0
+    @card_total = []
   end
 
-  def total
-    @total = hit.map { |card| Card::RANK.fetch(card.rank,card.rank)}.sum
+  def convert_next_card
+    card = @cards.last
+    @card_total << Card::RANK.fetch(card.rank, card.rank)
+  end
+
+  def card_total
+    @card_total.sum
   end
 
   def hit
@@ -27,7 +43,7 @@ class Participant
   end
 
   def busted?
-    @total > 21
+    card_total > 21
   end
 
   def to_s
@@ -35,13 +51,10 @@ class Participant
   end
 
   def reset_stats
-    self.total = 0
+    self.card_total = []
     self.cards = []
   end
-
 end
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Player < Participant
   attr_reader :name
@@ -51,23 +64,20 @@ class Player < Participant
     super()
   end
 
-  def set_name(name)
+  def add_name(name)
     self.name = name
   end
 
   private
+
   attr_writer :name
 end
 
 class Dealer < Participant
-
   def hidden_cards
     puts @cards.last
   end
-
 end
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Deck
   attr_reader :deck
@@ -81,17 +91,14 @@ class Deck
   end
 
   def generate_deck
-    52.times {|_| deck << Card.new(RANKS.sample, SUITS.sample) } 
+    52.times { |_| deck << Card.new(RANKS.sample, SUITS.sample) }
   end
 
-  # If we are to more the real world version of cards, we would give the ability to `deal` to the dealer. However in our program this would require the dealer to collaborate with the deck in order to `know` the deck, which creates an additional `dependency`. For this reason it might be best to leave the dealing of cards to the `Deck`.
   def draw
     generate_deck if deck.empty?
     deck.pop
   end
 end
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Card
   attr_reader :rank, :suit
@@ -117,13 +124,11 @@ class Card
   def to_s
     "#{rank} of #{suit}"
   end
-
 end
-
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 class Game
   attr_reader :deck, :player, :dealer
+
   include Formatable
 
   def initialize
@@ -136,14 +141,14 @@ class Game
     system "clear"
   end
 
-  def get_name
-    player.set_name(gets.chomp)
+  def prompt_name
+    player.add_name(gets.chomp)
   end
 
   def welcome_message
     puts PROMPT["welcome"]
     puts PROMPT["name"]
-    get_name
+    prompt_name
     puts PROMPT["instructions"]
   end
 
@@ -156,27 +161,27 @@ class Game
 
   def cards_screen
     puts "Dealer Cards:"
-    "#{dealer.hidden_cards}"
+    puts "#{dealer.hidden_cards}"
     puts "--------------------"
     puts "#{player.name} Cards:"
     puts "#{display_all_cards(player)}"
-    puts "Your running total is: #{player.total}"
+    puts "\nYour running total is: #{player.card_total}"
     new_line
   end
 
   def dealer_cards
     puts "Dealer Cards:"
-    "#{display_all_cards(dealer)}"
-    puts "Total: #{dealer.total}"
+    puts "#{display_all_cards(dealer)}"
+    puts "Total: #{dealer.card_total}"
   end
 
   def display_all_cards(participant)
-    participant.hit.each { |card| puts "- #{card.rank} of #{card.suit}"}
+    participant.hit.each { |card| puts "- #{card.rank} of #{card.suit}" }
     nil
   end
 
   def participant?(participant)
-    participant.class == Player
+    participant.instance_of?(Player)
   end
 
   def start_choice
@@ -190,46 +195,53 @@ class Game
   end
 
   def init_cards
-    2.times { participant_hit(player)}
-    2.times { participant_hit(dealer) }
+    2.times { hit_and_add_total(player) }
+    2.times { hit_and_add_total(dealer) }
+  end
+
+  def convert_card(participant)
+    participant.convert_next_card
+  end
+
+  def hit_and_add_total(participant)
+    participant_hit(participant)
+    convert_card(participant)
   end
 
   def evaluate_cards
-    if dealer.busted?
-      busted(dealer)
-      winner(player) 
-    elsif player.total > dealer.total
-      winner(player) 
-    elsif player.total == dealer.total
-      tie_game
-    else
-      winner(dealer)
-    end
+    player = player.card_total
+    dealer = dealer.card_total
+    return winner(player) if dealer.busted? || player > dealer
+    return tie_game if player == dealer
+    winner(dealer)
+  end
+
+  def check_for_eleven(participant)
+    participant.eleven_or_one!
   end
 
   def player_turn
-    loop do 
+    loop do
       choice = hit_or_stay_choice
-      participant_hit(player) if choice == '1'
+      hit_and_add_total(player) if choice == '1'
+      check_for_eleven(player)
       clear_screen
       cards_screen
-      break busted(player) if player.busted? || choice == '2'
+      break if player.busted? || choice == '2'
     end
   end
 
   def dealer_turn
     count = 0
     puts "Dealers Turn.."
-    until dealer.total >= 17
+    until dealer.card_total >= 17
       count += 1
-      participant_hit(dealer)
-      new_line
-      puts count == 1 ? "The Dealer Hits!" : "The Dealer Hits AGAIN!!"
-      puts "Dealer Cards"
-      puts "#{dealer.hidden_cards}"
+      hit_and_add_total(dealer)
+      check_for_eleven(dealer)
+      puts count == 1 ? "\nThe Dealer Hits!" : "\nThe Dealer Hits AGAIN!!"
+      puts "\nDealer Cards\n#{dealer.hidden_cards}"
     end
-    new_line
-    puts "The Dealer stays" unless dealer.busted?
+    puts "\n The Dealer stays" unless dealer.busted?
   end
 
   def tie_game
@@ -237,9 +249,9 @@ class Game
   end
 
   def winner(participant)
-    puts "#{participant} Wins The Game" 
+    puts "#{participant} Wins The Game"
   end
-  
+
   def busted(participant)
     puts "BUSTED! #{participant} loses.."
     new_line
@@ -264,14 +276,16 @@ class Game
   def set_initial_cards
     clear_screen
     init_cards
-    cards_screen
   end
 
   def ready_screen
-    loop do 
+    loop do
       choice = start_choice
       next unless choice == "1"
       set_initial_cards
+      check_for_eleven(player)
+      check_for_eleven(dealer)
+      cards_screen
       break
     end
   end
@@ -279,16 +293,17 @@ class Game
   def play_game
     player_turn
     return busted(player) if player.busted?
-    new_line 
+    new_line
     dealer_turn
+    busted(dealer) if dealer.busted?
+
     evaluate_cards
     new_line
   end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
   def start
     welcome_message
-    loop do 
+    loop do
       ready_screen
       play_game
       dealer_cards
@@ -298,12 +313,6 @@ class Game
     end
     exit_screen
   end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 end
-# What happens if we have a tie or bust on the initial cards
-# What is the criteria for alternating ACE cards 11/1
 
 Game.new.start
-
-
-
