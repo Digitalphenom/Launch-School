@@ -44,8 +44,13 @@ module Formatable
 end
 
 class Move
-  VALUES = { 1 => "rock", 2 => "paper", 3 => "scissors", 4 => "lizard", 5 =>
-"spock" }
+  VALUES = {  1 => "rock",
+              2 => "paper",
+              3 => "scissors",
+              4 => "lizard",
+              5 => "spock" 
+  }
+
   include SpecialMoves
 
   attr_reader :value
@@ -157,10 +162,9 @@ class Human < Player
     choice.to_s.size == 1
   end
 
-  def choice(round)
+  def choice
     choice = nil
     loop do
-      indent("Round: #{round}")
       new_line
       puts MESSAGES["make_choice"]
       choice = gets.chomp
@@ -189,7 +193,6 @@ class RPSGame
     @computer = Computer.new
     @human_score = 0
     @computer_score = 0
-    @round = 1
     @winner = nil
   end
 
@@ -209,6 +212,10 @@ class RPSGame
   def check_winning_move
     return @winner = 'tie' if human.move.value == computer.move.value
     @winner = human.move > computer.move
+  end
+
+  def dialogue_display
+
   end
 
   def display_winner_and_score
@@ -294,8 +301,8 @@ class RPSGame
     false
   end
 
-  def make_choice(round)
-    human.choice(round)
+  def make_choice
+    human.choice
     computer.choice
   end
 
@@ -313,17 +320,17 @@ class RPSGame
   def start_game
     display_ask_for_rounds
     total = (total_rounds.to_i + 1)
-    loop do
-      make_choice(round)
+    round = 1
+    until round == total
+      indent("Round: #{round}")
+      make_choice
       add_human_computer_moves
       display_stats
-      self.round += 1
-      break if round == (total)
+      round += 1
     end
   end
 
   def reset_stats
-    self.round = 1
     self.human_score = 0
     self.computer_score = 0
     computer.reset_moves([])
