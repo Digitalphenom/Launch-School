@@ -26,12 +26,30 @@ module SpecialMoves
 end
 
 module Formatable
+
+    DIALOGUE = {  ["rock", "spock"] => "ROCK crushes SCISSORS",
+                  ["rock", "lizard"] => "ROCK crushes LIZARD",
+                  ["paper", "rock"] => "PAPER covers ROCK",
+                  ["paper", "spock"] => "PAPER disproves SPOCK",
+                  ["scissors", "paper"] => "SCISSORS cuts PAPER",
+                  ["scissors", "lizard"] => "SCISSORS decapitates LIZARD",
+                  ["lizard", "paper"] => "LIZARD eats PAPER",
+                  ["lizard", "spock"] => "LIZARD poisons SPOCK",
+                  ["spock", "rock"] => "SPOCK vaporizes ROCK",
+                  ["spock", "scissors"] => "SPOCK smashes SCISSORS" 
+  }
+      
   def new_line
     puts
   end
 
   def special_output(n)
     puts " ---- #{n} -----"
+  end
+
+  def dialogue_output(player, computer)
+    new_line
+    puts DIALOGUE[[player, computer]]
   end
 
   def output(n)
@@ -214,18 +232,15 @@ class RPSGame
     @winner = human.move > computer.move
   end
 
-  def dialogue_display
-
-  end
-
-  def display_winner_and_score
-    check_winning_move()
-    return display_tie() if @winner == 'tie'
+  def display_round_winner_and_score
+    return display_tie() if check_winning_move() == 'tie'
 
     if @winner
+      dialogue_output(human.move.value, computer.move.value)
       special_output("#{human.name} WON!")
       self.human_score += 1
     else
+      dialogue_output(computer.move.value, human.move.value)
       special_output("#{computer.name} WON!")
       self.computer_score += 1
     end
@@ -261,6 +276,7 @@ class RPSGame
   def display_score
     new_line
     indent "#{human.name} Score: #{human_score} #{computer.name} Score: #{computer_score}"
+    new_line
   end
 
   def display_ask_for_rounds
@@ -309,7 +325,7 @@ class RPSGame
   def display_stats
     display_move_history
     display_current_moves
-    display_winner_and_score
+    display_round_winner_and_score
   end
 
   def add_human_computer_moves
