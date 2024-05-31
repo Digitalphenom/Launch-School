@@ -1,4 +1,5 @@
 require "yaml"
+require "pry"
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
@@ -105,7 +106,7 @@ class Move
   end
 
   def to_s
-    @value
+    @value.upcase
   end
 end
 
@@ -123,17 +124,14 @@ class Player
     all_moves[player] = [] if all_moves[player].nil?
     all_moves[player] << move
   end
-
-  def to_s
-    @all_moves
-  end
 end
 
 class Human < Player
   def set_name
     name = ""
     loop do
-      puts "Whats Your Name?\n"
+      puts MESSAGES["your_name"]
+      new_line
       name = gets.chomp
       break unless valid_name?(name)
       puts MESSAGES["valid_name?"]
@@ -185,10 +183,8 @@ class RPSGame
     @winner = nil
   end
 
-  def display_welcome_message
-    puts "Hi #{human.name}"
-    puts MESSAGES["welcome"]
-    new_line
+  def clear_screen
+    system "clear"
   end
 
   def display_goodbye_message(player)
@@ -196,7 +192,7 @@ class RPSGame
   end
 
   def display_current_moves
-    puts "#{human.name} choose #{human.move}"
+    puts "#{human.name} chose #{human.move}"
     puts "#{computer.name} chose #{computer.move}"
   end
 
@@ -239,6 +235,7 @@ class RPSGame
   end
 
   def display_move_history
+    clear_screen
     puts "#{human.name}'s Moves:"
     p human.all_moves.values.first
     new_line
@@ -249,7 +246,7 @@ class RPSGame
 
   def display_score
     new_line
-    indent "Human Score: #{human_score} Computer Score: #{computer_score}"
+    indent "#{human.name} Score: #{human_score} #{computer.name} Score: #{computer_score}"
   end
 
   def display_ask_for_rounds
@@ -281,9 +278,12 @@ class RPSGame
       puts MESSAGES["another_game?"]
       answer = gets.chomp
       break if ["y", "n"].include?(answer.downcase)
-      puts "Sorry, must be y or n."
+      puts MESSAGES["invalid_input"]
     end
-    return true if answer == "y"
+    if answer == "y"
+      clear_screen
+      return true 
+    end
     false
   end
 
@@ -314,6 +314,19 @@ class RPSGame
     self.round = 1
     self.human_score = 0
     self.computer_score = 0
+    computer.all_moves = {}
+    human.all_moves = {}
+  end
+
+  def your_opponent
+    puts "Your opponent will be #{computer.name}"
+    new_line
+  end
+  def display_welcome_message
+    puts "Hi #{human.name}"
+    puts MESSAGES["welcome"]
+    new_line
+    your_opponent
   end
 
   def core_game
@@ -326,6 +339,7 @@ class RPSGame
   end
 
   def play
+    clear_screen
     display_welcome_message
     core_game
     display_goodbye_message(human)
