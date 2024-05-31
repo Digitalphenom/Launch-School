@@ -47,7 +47,6 @@ class Move
   VALUES = { 1 => "rock", 2 => "paper", 3 => "scissors", 4 => "lizard", 5 =>
 "spock" }
   include SpecialMoves
-  include Formatable
 
   attr_reader :value
 
@@ -111,19 +110,30 @@ class Move
 end
 
 class Player
-  attr_accessor :name, :all_moves, :move
+  attr_reader :name, :all_moves, :move
 
   include Formatable
 
   def initialize
     set_name
-    @all_moves = {}
+    @all_moves = []
   end
 
-  def add_to_moves(player, move)
-    all_moves[player] = [] if all_moves[player].nil?
-    all_moves[player] << move
+  def add_to_all_moves(move)
+    all_moves << move
   end
+
+  def to_s
+    "#{name}'s moves: #{@all_moves}"
+  end
+
+  def reset_moves(value)
+    self.all_moves = value
+  end
+
+  private
+
+  attr_writer :name, :all_moves, :move
 end
 
 class Human < Player
@@ -220,9 +230,8 @@ class RPSGame
     display_score()
   end
 
-  def add_moves
-    human.add_to_moves(human.name, human.move.value)
-    computer.add_to_moves(computer.name, computer.move.value)
+  def add_moves(participant)
+    participant.add_to_all_moves(participant.move.value)
   end
 
   def display_game_winner
@@ -236,11 +245,9 @@ class RPSGame
 
   def display_move_history
     clear_screen
-    puts "#{human.name}'s Moves:"
-    p human.all_moves.values.first
+    puts human
     new_line
-    puts "#{computer.name}'s Moves:"
-    p computer.all_moves.values.first
+    puts computer
     new_line
   end
 
@@ -298,12 +305,17 @@ class RPSGame
     display_winner_and_score
   end
 
+  def add_human_computer_moves
+    add_moves(human)
+    add_moves(computer)
+  end
+
   def start_game
     display_ask_for_rounds
     total = (total_rounds.to_i + 1)
     loop do
       make_choice(round)
-      add_moves
+      add_human_computer_moves
       display_stats
       self.round += 1
       break if round == (total)
@@ -314,14 +326,15 @@ class RPSGame
     self.round = 1
     self.human_score = 0
     self.computer_score = 0
-    computer.all_moves = {}
-    human.all_moves = {}
+    computer.reset_moves([])
+    human.reset_moves([])
   end
 
   def your_opponent
     puts "Your opponent will be #{computer.name}"
     new_line
   end
+
   def display_welcome_message
     puts "Hi #{human.name}"
     puts MESSAGES["welcome"]
@@ -345,7 +358,7 @@ class RPSGame
     display_goodbye_message(human)
   end
 
-  protected
+  private
 
   attr_accessor :human, :computer, :human_score, :computer_score, :round
 end
