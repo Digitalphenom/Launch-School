@@ -1,4 +1,4 @@
-module Chooseable
+module Moveable
   def cpu_places_piece!(human, computer)
     square = nil
 
@@ -57,8 +57,8 @@ module Playerable
   class Computer < Player
     COMPUTER_NAMES = ["Chris Lee",
                       "Tony Robinson",
-                      "Owen Cook",
-                      "Your Mother"].sample
+                      "Martha Stewart",
+                      "Donald"].sample
 
     def name
       COMPUTER_NAMES
@@ -83,7 +83,7 @@ class Board
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # colums
                   [[1, 5, 9], [3, 5, 7]]
 
-  include Chooseable
+  include Moveable
 
   def initialize
     @squares = {}
@@ -211,7 +211,7 @@ class TTTGame
     puts "Press: 1 for #{human.name} | 2 for #{computer.name}"
   end
 
-  def display_who_moves_first_and_player_option
+  def who_moves_first
     display_who_moves_first
     who_moves_first_choice
   end
@@ -314,7 +314,7 @@ class TTTGame
     clear_screen_and_display_board
   end
 
-  def display_play_again_message
+  def display_play_again
     puts 'Let\'s play again'
     puts
   end
@@ -330,7 +330,7 @@ class TTTGame
     display_welcome_message
     human.set_human_name
     choose_marker
-    display_who_moves_first_and_player_option
+    who_moves_first
     display_board
   end
 
@@ -339,8 +339,8 @@ class TTTGame
       player_move
       break unless play_again?
       reset
-      display_play_again_message
-      display_who_moves_first_and_player_option
+      display_play_again
+      who_moves_first
     end
   end
 
