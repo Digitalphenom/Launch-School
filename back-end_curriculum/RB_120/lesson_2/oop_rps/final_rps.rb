@@ -26,19 +26,17 @@ module SpecialMoves
 end
 
 module Formatable
+  DIALOGUE = {  ["rock", "spock"] => "ROCK crushes SCISSORS",
+                ["rock", "lizard"] => "ROCK crushes LIZARD",
+                ["paper", "rock"] => "PAPER covers ROCK",
+                ["paper", "spock"] => "PAPER disproves SPOCK",
+                ["scissors", "paper"] => "SCISSORS cuts PAPER",
+                ["scissors", "lizard"] => "SCISSORS decapitates LIZARD",
+                ["lizard", "paper"] => "LIZARD eats PAPER",
+                ["lizard", "spock"] => "LIZARD poisons SPOCK",
+                ["spock", "rock"] => "SPOCK vaporizes ROCK",
+                ["spock", "scissors"] => "SPOCK smashes SCISSORS" }
 
-    DIALOGUE = {  ["rock", "spock"] => "ROCK crushes SCISSORS",
-                  ["rock", "lizard"] => "ROCK crushes LIZARD",
-                  ["paper", "rock"] => "PAPER covers ROCK",
-                  ["paper", "spock"] => "PAPER disproves SPOCK",
-                  ["scissors", "paper"] => "SCISSORS cuts PAPER",
-                  ["scissors", "lizard"] => "SCISSORS decapitates LIZARD",
-                  ["lizard", "paper"] => "LIZARD eats PAPER",
-                  ["lizard", "spock"] => "LIZARD poisons SPOCK",
-                  ["spock", "rock"] => "SPOCK vaporizes ROCK",
-                  ["spock", "scissors"] => "SPOCK smashes SCISSORS" 
-  }
-      
   def new_line
     puts
   end
@@ -47,9 +45,9 @@ module Formatable
     puts " ---- #{n} -----"
   end
 
-  def dialogue_output(player, computer)
+  def dialogue_output(value)
     new_line
-    puts DIALOGUE[[player, computer]]
+    puts DIALOGUE[value]
   end
 
   def output(n)
@@ -66,8 +64,7 @@ class Move
               2 => "paper",
               3 => "scissors",
               4 => "lizard",
-              5 => "spock" 
-  }
+              5 => "spock" }
 
   include SpecialMoves
 
@@ -133,13 +130,14 @@ class Move
 end
 
 class Player
-  attr_reader :name, :all_moves, :move
+  attr_reader :name, :all_moves, :move, :score
 
   include Formatable
 
   def initialize
     set_name
     @all_moves = []
+    @score = 0
   end
 
   def add_to_all_moves(move)
@@ -150,13 +148,21 @@ class Player
     "#{name}'s moves: #{@all_moves}"
   end
 
-  def reset_moves(value)
-    self.all_moves = value
+  def reset_moves
+    self.all_moves = []
+  end
+
+  def reset_score
+    self.score = 0
+  end
+
+  def increment_score
+    self.score += 1
   end
 
   private
 
-  attr_writer :name, :all_moves, :move
+  attr_writer :name, :all_moves, :move, :score
 end
 
 class Human < Player
@@ -209,16 +215,14 @@ class RPSGame
   def initialize
     @human = Human.new
     @computer = Computer.new
-    @human_score = 0
-    @computer_score = 0
-    @winner = nil
+    @round = 1
   end
 
   def clear_screen
     system "clear"
   end
 
-  def display_goodbye_message(player)
+  def display_goodbye_message
     puts "#{player.name} Thanks For Playing!"
   end
 
@@ -228,28 +232,28 @@ class RPSGame
   end
 
   def check_winning_move
-    return @winner = 'tie' if human.move.value == computer.move.value
-    @winner = human.move > computer.move
+    return 'tie' if human.move.value == computer.move.value
+    human.move > computer.move
   end
 
-  def display_round_winner_and_score
-    return display_tie() if check_winning_move() == 'tie'
+  def round_winner
+    hmn = human.move.value
+    cpu = computer.move.value
 
-    if @winner
-      dialogue_output(human.move.value, computer.move.value)
-      special_output("#{human.name} WON!")
-      self.human_score += 1
-    else
-      dialogue_output(computer.move.value, human.move.value)
-      special_output("#{computer.name} WON!")
-      self.computer_score += 1
-    end
-    display_score()
+    value1 = check_winning_move ? [hmn, cpu] : [cpu, hmn]
+    value2 = check_winning_move ? "#{human.name} WON!" : "#{computer.name} WON!"
+    [value1, value2]
+  end
+
+  def display_win_or_tie
+    return display_tie() if check_winning_move == 'tie'
+    value, winner = round_winner
+    dialogue_output(value)
+    special_output(winner)
   end
 
   def display_tie
     special_output("Its a tie!")
-    display_score()
   end
 
   def add_moves(participant)
@@ -257,8 +261,8 @@ class RPSGame
   end
 
   def display_game_winner
-    return special_output "Its a tie!" if human_score == computer_score
-    if human_score > computer_score
+    return special_output "Its a tie!" if human.score == computer.score
+    if human.score > computer.score
       special_output "#{human.name} wins the game!"
     else
       special_output "#{computer.name} wins the game!"
@@ -275,7 +279,8 @@ class RPSGame
 
   def display_score
     new_line
-    indent "#{human.name} Score: #{human_score} #{computer.name} Score: #{computer_score}"
+    print "  #{human.name} Score: #{human.score}"
+    print "  #{computer.name} Score: #{computer.score}"
     new_line
   end
 
@@ -310,14 +315,17 @@ class RPSGame
       break if ["y", "n"].include?(answer.downcase)
       puts MESSAGES["invalid_input"]
     end
-    if answer == "y"
-      clear_screen
-      return true 
-    end
+    clear_screen
+    return true if answer == "y"
     false
   end
 
-  def make_choice
+  def track_wins
+    return if check_winning_move == 'tie'
+    check_winning_move ? human.increment_score : computer.increment_score
+  end
+
+  def hand_choice
     human.choice
     computer.choice
   end
@@ -325,7 +333,12 @@ class RPSGame
   def display_stats
     display_move_history
     display_current_moves
-    display_round_winner_and_score
+    display_win_or_tie
+    display_score
+  end
+
+  def display_rounds
+    indent("Round: #{round}")
   end
 
   def add_human_computer_moves
@@ -336,21 +349,21 @@ class RPSGame
   def start_game
     display_ask_for_rounds
     total = (total_rounds.to_i + 1)
-    round = 1
-    until round == total
-      indent("Round: #{round}")
-      make_choice
+    until @round == total
+      hand_choice
       add_human_computer_moves
+      track_wins
       display_stats
-      round += 1
+      increment_round
     end
   end
 
   def reset_stats
-    self.human_score = 0
-    self.computer_score = 0
-    computer.reset_moves([])
-    human.reset_moves([])
+    human.reset_score
+    computer.reset_score
+    computer.reset_moves
+    human.reset_moves
+    reset_rounds
   end
 
   def your_opponent
@@ -369,7 +382,7 @@ class RPSGame
     loop do
       start_game
       display_game_winner
-      break unless play_again?
+      break clear_screen unless play_again?
       reset_stats
     end
   end
@@ -378,12 +391,12 @@ class RPSGame
     clear_screen
     display_welcome_message
     core_game
-    display_goodbye_message(human)
+    display_goodbye_message
   end
 
   private
 
-  attr_accessor :human, :computer, :human_score, :computer_score, :round
+  attr_accessor :human, :computer, :round
 end
 
 RPSGame.new.play
