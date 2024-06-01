@@ -1,5 +1,4 @@
 require "yaml"
-require "pry"
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
@@ -223,7 +222,7 @@ class RPSGame
   end
 
   def display_goodbye_message
-    puts "#{player.name} Thanks For Playing!"
+    puts "#{human.name} Thanks For Playing!"
   end
 
   def display_current_moves
@@ -246,7 +245,7 @@ class RPSGame
   end
 
   def display_win_or_tie
-    return display_tie() if check_winning_move == 'tie'
+    return display_tie if check_winning_move == 'tie'
     value, winner = round_winner
     dialogue_output(value)
     special_output(winner)
@@ -297,6 +296,7 @@ class RPSGame
   end
 
   def total_rounds
+    display_ask_for_rounds
     input = ""
 
     loop do
@@ -338,24 +338,12 @@ class RPSGame
   end
 
   def display_rounds
-    indent("Round: #{round}")
+    indent("Round: #{@round}")
   end
 
   def add_human_computer_moves
     add_moves(human)
     add_moves(computer)
-  end
-
-  def start_game
-    display_ask_for_rounds
-    total = (total_rounds.to_i + 1)
-    until @round == total
-      hand_choice
-      add_human_computer_moves
-      track_wins
-      display_stats
-      increment_round
-    end
   end
 
   def reset_stats
@@ -366,31 +354,43 @@ class RPSGame
     reset_rounds
   end
 
-  def your_opponent
-    puts "Your opponent will be #{computer.name}"
-    new_line
-  end
-
   def display_welcome_message
     puts "Hi #{human.name}"
     puts MESSAGES["welcome"]
     new_line
-    your_opponent
+    puts "Your opponent will be #{computer.name}"
+    new_line
   end
 
-  def core_game
-    loop do
-      start_game
-      display_game_winner
-      break clear_screen unless play_again?
-      reset_stats
+  def reset_rounds
+    @round = 1
+  end
+
+  def increment_round
+    @round += 1
+  end
+
+  def start_game
+    total = (total_rounds.to_i + 1)
+    until @round == total
+      display_rounds
+      hand_choice
+      add_human_computer_moves
+      track_wins
+      display_stats
+      increment_round
     end
   end
 
   def play
     clear_screen
     display_welcome_message
-    core_game
+    loop do
+      start_game
+      display_game_winner
+      break clear_screen unless play_again?
+      reset_stats
+    end
     display_goodbye_message
   end
 
