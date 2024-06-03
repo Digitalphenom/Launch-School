@@ -1,31 +1,32 @@
 require "yaml"
+require "pry"
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
 module SpecialMoves
-  def self.r2d2
-    ["rock", "scissors", "lizard", "spock"].sample
+  def r2d2
+    [1, 3, 4, 5]
   end
 
-  def self.hal
-    ["rock", "scissors", "lizard", "spock", "spock"].sample
+  def hal
+    [1, 3, 4, 5, 5]
   end
 
-  def self.number5
-    ["rock", "scissors", "lizard", "lizard", "spock"].sample
+  def number5
+    [1, 3, 4, 4, 5]
   end
 
-  def self.chappie
-    ["rock", "rock", "scissors", "lizard", "spock", "spock"].sample
+  def chappie
+    [1, 1, 2, 3, 5, 5]
   end
 
-  def self.sonny
-    ["scissors", "lizard", "lizard"].sample
+  def sonny
+    [2, 3, 3]
   end
 end
 
 module Formatable
-  DIALOGUE = {  ["rock", "spock"] => "ROCK crushes SCISSORS",
+  DIALOGUE = {  ["rock", "scissors"] => "ROCK crushes SCISSORS",
                 ["rock", "lizard"] => "ROCK crushes LIZARD",
                 ["paper", "rock"] => "PAPER covers ROCK",
                 ["paper", "spock"] => "PAPER disproves SPOCK",
@@ -59,13 +60,14 @@ module Formatable
 end
 
 class Move
-  VALUES = {  1 => "rock",
+  VALUES = {
+              1 => "rock",
               2 => "paper",
               3 => "scissors",
               4 => "lizard",
               5 => "spock" }
 
-  include SpecialMoves
+  extend SpecialMoves
 
   attr_reader :value
 
@@ -129,7 +131,7 @@ class Move
 end
 
 class Player
-  attr_reader :name, :all_moves, :move, :score
+  attr_reader :name, :move, :score
 
   include Formatable
 
@@ -140,11 +142,19 @@ class Player
   end
 
   def add_to_all_moves(move)
-    all_moves << move
+    @all_moves << move
+  end
+
+  def all_moves
+    @all_moves.each.with_index(1) do |move, i,|
+      puts "  Round #{i}: #{move} "
+    end
+    nil
   end
 
   def to_s
-    "#{name}'s moves: #{@all_moves}"
+    puts "#{name}'s moves:"
+    "#{all_moves}"
   end
 
   def reset_moves
@@ -204,7 +214,8 @@ class Computer < Player
   end
 
   def choice
-    self.move = Move.new(SpecialMoves.send(name.downcase))
+    computer_value = Move.send(name.downcase).sample
+    self.move = Move.new(Move::VALUES[computer_value])
   end
 end
 
