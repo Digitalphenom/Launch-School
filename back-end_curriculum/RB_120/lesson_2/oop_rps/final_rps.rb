@@ -60,8 +60,7 @@ module Formatable
 end
 
 class Move
-  VALUES = {
-              1 => "rock",
+  VALUES = {  1 => "rock",
               2 => "paper",
               3 => "scissors",
               4 => "lizard",
