@@ -1,5 +1,4 @@
 require "yaml"
-require "pry"
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
@@ -25,7 +24,7 @@ module SpecialMoves
   end
 end
 
-module Formatable
+module RPSGameDisplay
   DIALOGUE = {  ["rock", "scissors"] => "ROCK crushes SCISSORS",
                 ["rock", "lizard"] => "ROCK crushes LIZARD",
                 ["paper", "rock"] => "PAPER covers ROCK",
@@ -37,6 +36,83 @@ module Formatable
                 ["spock", "rock"] => "SPOCK vaporizes ROCK",
                 ["spock", "scissors"] => "SPOCK smashes SCISSORS" }
 
+  def display_dialogue(value)
+    new_line
+    puts DIALOGUE[value]
+  end
+
+  def clear_screen
+    system "clear"
+  end
+
+  def display_goodbye_message
+    puts "#{human.name} Thanks For Playing!"
+  end
+
+  def display_current_moves
+    print "#{human.name} chose #{human.move} and "
+    puts "#{computer.name} chose #{computer.move}"
+  end
+
+  def display_tie
+    special_output("Its a tie!")
+  end
+
+  def display_score
+    new_line
+    print "  #{human.name} Score: #{human.score}"
+    print "  #{computer.name} Score: #{computer.score}"
+    new_line
+  end
+
+  def display_ask_for_rounds
+    indent MESSAGES["round?"]
+  end
+
+  def display_rounds
+    indent("Round: #{@round}")
+  end
+
+  def display_welcome_message
+    puts "Hi #{human.name}"
+    puts MESSAGES["welcome"]
+    new_line
+    puts "Your opponent will be #{computer.name}"
+    new_line
+  end
+
+  def display_round_dialogue
+    keys = return_dialogue_keys
+    display_dialogue(keys)
+  end
+
+  def display_round_winner
+    return display_tie if check_winning_move == 'tie'
+    winner = return_round_winner
+    special_output("#{winner.name} won the round!")
+  end
+
+  def display_game_winner
+    return display_tie if human.score == computer.score
+    return special_output(display_winner(human)) if human.score > computer.score
+    special_output(display_winner(computer))
+  end
+
+  def display_winner(participant)
+    new_line
+    "#{participant.name} wins the game!"
+  end
+
+  def display_move_history
+    clear_screen
+    puts human
+    new_line
+    puts computer
+    new_line
+  end
+end
+
+module Formatable
   def new_line
     puts
   end
@@ -45,21 +121,8 @@ module Formatable
     puts " ---- #{n} -----"
   end
 
-  def dialogue_output(value)
-    new_line
-    puts DIALOGUE[value]
-  end
-
   def indent(n)
     puts "  #{n}"
-  end
-
-  def win_round(participant)
-    "#{participant.name} won the round!"
-  end
-
-  def display_winner(participant)
-    "#{participant.name} wins the game!"
   end
 end
 
@@ -82,12 +145,22 @@ class Move
     @value = value
   end
 
-  def >(other_move)
-    WINNING_MOVES[value].include?(other_move.value)
-  end
-
   def to_s
     @value.capitalize
+  end
+
+  def equal?(other)
+    self == other
+  end
+
+  def greater?(other)
+    self > other
+  end
+
+  protected
+
+  def >(other)
+    WINNING_MOVES[value].include?(other.value)
   end
 
   def ==(other)
@@ -106,6 +179,10 @@ class Player
     @score = 0
   end
 
+  def to_s
+    "#{all_moves}"
+  end
+
   def add_to_all_moves(move)
     @all_moves << move
   end
@@ -118,8 +195,8 @@ class Player
     nil
   end
 
-  def to_s
-    "#{all_moves}"
+  def increment_score
+    self.score += 1
   end
 
   def reset_moves
@@ -130,16 +207,26 @@ class Player
     self.score = 0
   end
 
-  def increment_score
-    self.score += 1
-  end
-
   private
 
   attr_writer :name, :all_moves, :move, :score
 end
 
 class Human < Player
+  def choice
+    choice = nil
+    loop do
+      new_line
+      puts MESSAGES["make_choice"]
+      choice = gets.chomp
+      break if valid_size?(choice) && Move::VALUES.keys.include?(choice.to_i)
+      puts MESSAGES["invalid_choice"]
+    end
+    self.move = Move.new(Move::VALUES[choice.to_i])
+  end
+
+  private
+
   def set_name
     name = ""
     loop do
@@ -153,84 +240,67 @@ class Human < Player
   end
 
   def valid_name?(name)
-    name.empty? || name.match?(/[0-9]/)
+    name.empty? || name.match?(/[0-9|\s]/)
   end
 
   def valid_size?(choice)
     choice.to_s.size == 1
-  end
-
-  def choice
-    choice = nil
-    loop do
-      new_line
-      puts MESSAGES["make_choice"]
-      choice = gets.chomp
-      break if valid_size?(choice) && Move::VALUES.keys.include?(choice.to_i)
-      puts MESSAGES["invalid_choice"]
-    end
-    self.move = Move.new(Move::VALUES[choice.to_i])
   end
 end
 
 class Computer < Player
   extend SpecialMoves
 
-  def set_name
-    self.name = ["R2D2", "Hal", "Chappie", "Sonny", "Number5"].sample
-  end
-
   def choice
     computer_value = Computer.send(name.downcase).sample
     self.move = Move.new(Move::VALUES[computer_value])
   end
+
+  private
+
+  def set_name
+    self.name = ["R2D2", "Hal", "Chappie", "Sonny", "Number5"].sample
+  end
 end
 
 class RPSGame
-  include Formatable
-
   def initialize
     @human = Human.new
     @computer = Computer.new
     @round = 1
   end
 
-  def clear_screen
-    system "clear"
+  def play
+    clear_screen
+    display_welcome_message
+    loop do
+      start_game
+      display_game_winner
+      break clear_screen unless play_again?
+      reset_stats
+    end
+    display_goodbye_message
   end
 
-  def display_goodbye_message
-    puts "#{human.name} Thanks For Playing!"
-  end
+  private
 
-  def display_current_moves
-    print "#{human.name} chose #{human.move} and "
-    puts "#{computer.name} chose #{computer.move}"
-  end
+  include Formatable
+  include RPSGameDisplay
 
   def check_winning_move
-    return 'tie' if human.move == computer.move
-    human.move > computer.move
+    return "tie" if human.move.equal?(computer.move)
+    human.move.greater?(computer.move)
   end
 
-  def round_winner
+  def return_round_winner
+    check_winning_move ? human : computer
+  end
+
+  def return_dialogue_keys
     hmn = human.move.value
     cpu = computer.move.value
 
-    val1 = check_winning_move ? [hmn, cpu] : [cpu, hmn]
-    val2 = check_winning_move ? win_round(human) : win_round(computer)
-    [val1, val2]
-  end
-
-  def display_win_or_tie
-    return display_tie if check_winning_move == 'tie'
-    value, winner = round_winner
-    dialogue_output(value)
-    special_output(winner)
-  end
-
-  def display_tie
-    special_output("Its a tie!")
+    check_winning_move ? [hmn, cpu] : [cpu, hmn]
   end
 
   def add_moves(participant)
@@ -238,36 +308,8 @@ class RPSGame
     participant.add_to_all_moves(my_move)
   end
 
-  def display_game_winner
-    return special_output "Its a tie!" if human.score == computer.score
-    if human.score > computer.score
-      special_output(display_winner(human))
-    else
-      special_output(display_winner(computer))
-    end
-  end
-
-  def display_move_history
-    clear_screen
-    puts human
-    new_line
-    puts computer
-    new_line
-  end
-
-  def display_score
-    new_line
-    print "  #{human.name} Score: #{human.score}"
-    print "  #{computer.name} Score: #{computer.score}"
-    new_line
-  end
-
-  def display_ask_for_rounds
-    indent MESSAGES["round?"]
-  end
-
   def valid_rounds?(input)
-    if input.match?(/[A-Za-z|0]/) || input.empty?
+    if input.match?(/[A-Za-z]/) || input.empty? || input.to_i.zero?
       puts MESSAGES["valid_number"]
       return true
     end
@@ -309,15 +351,12 @@ class RPSGame
     computer.choice
   end
 
-  def display_stats
+  def game_stats
     display_move_history
     display_current_moves
-    display_win_or_tie
+    display_round_dialogue
+    display_round_winner
     display_score
-  end
-
-  def display_rounds
-    indent("Round: #{@round}")
   end
 
   def add_human_computer_moves
@@ -331,14 +370,6 @@ class RPSGame
     computer.reset_moves
     human.reset_moves
     reset_rounds
-  end
-
-  def display_welcome_message
-    puts "Hi #{human.name}"
-    puts MESSAGES["welcome"]
-    new_line
-    puts "Your opponent will be #{computer.name}"
-    new_line
   end
 
   def reset_rounds
@@ -356,24 +387,10 @@ class RPSGame
       hand_choice
       add_human_computer_moves
       track_wins
-      display_stats
+      game_stats
       increment_round
     end
   end
-
-  def play
-    clear_screen
-    display_welcome_message
-    loop do
-      start_game
-      display_game_winner
-      break clear_screen unless play_again?
-      reset_stats
-    end
-    display_goodbye_message
-  end
-
-  private
 
   attr_accessor :human, :computer, :round
 end
