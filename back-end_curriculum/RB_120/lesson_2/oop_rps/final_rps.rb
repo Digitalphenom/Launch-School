@@ -50,23 +50,31 @@ module Formatable
     puts DIALOGUE[value]
   end
 
-  def output(n)
-    puts n.to_s.upcase
-  end
-
   def indent(n)
     puts "  #{n}"
+  end
+
+  def win_round(participant)
+    "#{participant.name} won the round!"
+  end
+
+  def display_winner(participant)
+    "#{participant.name} wins the game!"
   end
 end
 
 class Move
-  VALUES = {  1 => "rock",
-              2 => "paper",
-              3 => "scissors",
-              4 => "lizard",
-              5 => "spock" }
+  VALUES = {  1 => 'rock',
+              2 => 'paper',
+              3 => 'scissors',
+              4 => 'lizard',
+              5 => 'spock' }
 
-  extend SpecialMoves
+  WINNING_MOVES = {  'rock' => ['lizard', 'scissors'],
+                     'scissors' => ['paper', 'lizard'],
+                     'paper' => ['rock', 'spock'],
+                     'lizard' => ['spock', 'paper'],
+                     'spock' => ['rock', 'scissors'] }
 
   attr_reader :value
 
@@ -74,58 +82,16 @@ class Move
     @value = value
   end
 
-  def scissors?
-    @value == "scissors"
-  end
-
-  def rock?
-    @value == "rock"
-  end
-
-  def paper?
-    @value == "paper"
-  end
-
-  def lizard?
-    @value == "lizard"
-  end
-
-  def spock?
-    @value == "spock"
-  end
-
-  # Player Wins
-
-  def rock_wins?(other_move)
-    (rock? && other_move.scissors?) || (rock? && other_move.lizard?)
-  end
-
-  def paper_wins?(other_move)
-    (paper? && other_move.rock?) || (paper? && other_move.spock?)
-  end
-
-  def scissors_wins?(other_move)
-    (scissors? && other_move.paper?) || (scissors? && other_move.lizard?)
-  end
-
-  def lizard_wins?(other_move)
-    (lizard? && other_move.spock?) || (lizard? && other_move.paper?)
-  end
-
-  def spock_wins?(other_move)
-    (spock? && other_move.rock?) || (spock? && other_move.scissors?)
-  end
-
   def >(other_move)
-    rock_wins?(other_move) ||
-      paper_wins?(other_move) ||
-      scissors_wins?(other_move) ||
-      lizard_wins?(other_move) ||
-      spock_wins?(other_move)
+    WINNING_MOVES[value].include?(other_move.value)
   end
 
   def to_s
-    @value.upcase
+    @value.capitalize
+  end
+
+  def ==(other)
+    value == other.value
   end
 end
 
@@ -145,6 +111,7 @@ class Player
   end
 
   def all_moves
+    puts "#{name}'s moves:"
     @all_moves.each.with_index(1) do |move, i,|
       puts "  Round #{i}: #{move} "
     end
@@ -152,7 +119,6 @@ class Player
   end
 
   def to_s
-    puts "#{name}'s moves:"
     "#{all_moves}"
   end
 
@@ -208,12 +174,14 @@ class Human < Player
 end
 
 class Computer < Player
+  extend SpecialMoves
+
   def set_name
     self.name = ["R2D2", "Hal", "Chappie", "Sonny", "Number5"].sample
   end
 
   def choice
-    computer_value = Move.send(name.downcase).sample
+    computer_value = Computer.send(name.downcase).sample
     self.move = Move.new(Move::VALUES[computer_value])
   end
 end
@@ -236,12 +204,12 @@ class RPSGame
   end
 
   def display_current_moves
-    puts "#{human.name} chose #{human.move}"
+    print "#{human.name} chose #{human.move} and "
     puts "#{computer.name} chose #{computer.move}"
   end
 
   def check_winning_move
-    return 'tie' if human.move.value == computer.move.value
+    return 'tie' if human.move == computer.move
     human.move > computer.move
   end
 
@@ -249,9 +217,9 @@ class RPSGame
     hmn = human.move.value
     cpu = computer.move.value
 
-    value1 = check_winning_move ? [hmn, cpu] : [cpu, hmn]
-    value2 = check_winning_move ? "#{human.name} WON!" : "#{computer.name} WON!"
-    [value1, value2]
+    val1 = check_winning_move ? [hmn, cpu] : [cpu, hmn]
+    val2 = check_winning_move ? win_round(human) : win_round(computer)
+    [val1, val2]
   end
 
   def display_win_or_tie
@@ -266,15 +234,16 @@ class RPSGame
   end
 
   def add_moves(participant)
-    participant.add_to_all_moves(participant.move.value)
+    my_move = participant.move
+    participant.add_to_all_moves(my_move)
   end
 
   def display_game_winner
     return special_output "Its a tie!" if human.score == computer.score
     if human.score > computer.score
-      special_output "#{human.name} wins the game!"
+      special_output(display_winner(human))
     else
-      special_output "#{computer.name} wins the game!"
+      special_output(display_winner(computer))
     end
   end
 
@@ -298,7 +267,7 @@ class RPSGame
   end
 
   def valid_rounds?(input)
-    if input.match?(/[A-Za-z]/)
+    if input.match?(/[A-Za-z|0]/) || input.empty?
       puts MESSAGES["valid_number"]
       return true
     end
