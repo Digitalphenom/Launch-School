@@ -1,4 +1,5 @@
 require "yaml"
+require 'pry'
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
@@ -38,7 +39,8 @@ module RPSGameDisplay
 
   def display_dialogue(value)
     new_line
-    puts DIALOGUE[value]
+    indent_indent DIALOGUE[value]
+    new_line
   end
 
   def clear_screen
@@ -49,13 +51,8 @@ module RPSGameDisplay
     puts "#{human.name} Thanks For Playing!"
   end
 
-  def display_current_moves
-    print "#{human.name} chose #{human.move} and "
-    puts "#{computer.name} chose #{computer.move}"
-  end
-
   def display_tie
-    special_output("Its a tie!")
+    special_output("Even Round")
   end
 
   def display_score
@@ -70,6 +67,7 @@ module RPSGameDisplay
   end
 
   def display_rounds
+    new_line
     indent("Round: #{@round}")
   end
 
@@ -77,7 +75,7 @@ module RPSGameDisplay
     puts "Hi #{human.name}"
     puts MESSAGES["welcome"]
     new_line
-    puts "Your opponent will be #{computer.name}"
+    indent_indent "Your opponent will be #{computer.name}"
     new_line
   end
 
@@ -93,22 +91,26 @@ module RPSGameDisplay
   end
 
   def display_game_winner
-    return display_tie if human.score == computer.score
-    return special_output(display_winner(human)) if human.score > computer.score
-    special_output(display_winner(computer))
+    return tie_outline "Tie Game" if human.score == computer.score
+    return display_winner(human) if human.score > computer.score
+    display_winner(computer)
   end
 
   def display_winner(participant)
-    new_line
-    "#{participant.name} wins the game!"
+    winner_outline "#{participant.name} wins the game!"
   end
 
   def display_move_history
     clear_screen
-    puts human
+    hmn_moves = human.move_history
+    cpu_moves = computer.move_history
+
+    puts "#{human.name}'s moves:   #{computer.name}'s moves:"
     new_line
-    puts computer
-    new_line
+    (0...hmn_moves.size).each do |i|
+      indent "Round #{i + 1}: #{hmn_moves[i]} VS #{cpu_moves[i]}"
+    end
+    nil
   end
 end
 
@@ -117,12 +119,34 @@ module Formatable
     puts
   end
 
-  def special_output(n)
-    puts " ---- #{n} -----"
+  def special_output(value)
+    puts " ---- #{value} -----"
   end
 
-  def indent(n)
-    puts "  #{n}"
+  def indent(value)
+    puts "  #{value}"
+  end
+
+  def indent_indent(value)
+    puts "    #{value}"
+  end
+
+  def winner_outline(value)
+    bannerize(value, "*")
+  end
+
+  def tie_outline(value)
+    bannerize(value, " ")
+  end
+
+  def bannerize(str, char)
+    horizontals = "+=#{'=' * str.size}=+"
+    new_line
+    indent_indent horizontals
+    indent_indent "#{char} #{' ' * str.size} #{char}"
+    indent_indent "#{char} #{str} #{char}"
+    indent_indent "#{char} #{' ' * str.size} #{char}"
+    indent_indent horizontals
   end
 end
 
@@ -169,30 +193,18 @@ class Move
 end
 
 class Player
-  attr_reader :name, :move, :score
+  attr_reader :name, :move, :score, :move_history
 
   include Formatable
 
   def initialize
     set_name
-    @all_moves = []
+    @move_history = []
     @score = 0
   end
 
-  def to_s
-    "#{all_moves}"
-  end
-
-  def add_to_all_moves(move)
-    @all_moves << move
-  end
-
-  def all_moves
-    puts "#{name}'s moves:"
-    @all_moves.each.with_index(1) do |move, i,|
-      puts "  Round #{i}: #{move} "
-    end
-    nil
+  def add_to_history(move)
+    @move_history << move
   end
 
   def increment_score
@@ -200,7 +212,7 @@ class Player
   end
 
   def reset_moves
-    self.all_moves = []
+    self.move_history = []
   end
 
   def reset_score
@@ -209,20 +221,21 @@ class Player
 
   private
 
-  attr_writer :name, :all_moves, :move, :score
+  attr_writer :name, :move_history, :move, :score
 end
 
 class Human < Player
   def choice
     choice = nil
+    valid_keys = Move::VALUES.keys
     loop do
       new_line
       puts MESSAGES["make_choice"]
-      choice = gets.chomp
-      break if valid_size?(choice) && Move::VALUES.keys.include?(choice.to_i)
+      choice = gets.chomp.to_i
+      break if valid_keys.include?(choice)
       puts MESSAGES["invalid_choice"]
     end
-    self.move = Move.new(Move::VALUES[choice.to_i])
+    self.move = Move.new(Move::VALUES[choice])
   end
 
   private
@@ -241,10 +254,6 @@ class Human < Player
 
   def valid_name?(name)
     name.empty? || name.match?(/[0-9|\s]/)
-  end
-
-  def valid_size?(choice)
-    choice.to_s.size == 1
   end
 end
 
@@ -278,6 +287,7 @@ class RPSGame
       display_game_winner
       break clear_screen unless play_again?
       reset_stats
+      clear_screen
     end
     display_goodbye_message
   end
@@ -305,7 +315,7 @@ class RPSGame
 
   def add_moves(participant)
     my_move = participant.move
-    participant.add_to_all_moves(my_move)
+    participant.add_to_history(my_move)
   end
 
   def valid_rounds?(input)
@@ -318,27 +328,23 @@ class RPSGame
 
   def total_rounds
     display_ask_for_rounds
-    input = ""
-
     loop do
       input = gets.chomp
       next display_ask_for_rounds if valid_rounds?(input)
-      break
+      clear_screen
+      return input
     end
-    input
   end
 
   def play_again?
-    answer = nil
     loop do
+      new_line
       puts MESSAGES["another_game?"]
       answer = gets.chomp
-      break if ["y", "n"].include?(answer.downcase)
+      return true if answer.downcase == "y"
+      return false if answer.downcase == "n"
       puts MESSAGES["invalid_input"]
     end
-    clear_screen
-    return true if answer == "y"
-    false
   end
 
   def track_wins
@@ -353,7 +359,6 @@ class RPSGame
 
   def game_stats
     display_move_history
-    display_current_moves
     display_round_dialogue
     display_round_winner
     display_score
