@@ -52,7 +52,7 @@ module RPSGameDisplay
   end
 
   def display_tie
-    special_output("Even Round")
+    special_output MESSAGES["even"]
   end
 
   def display_score
@@ -81,9 +81,9 @@ module RPSGameDisplay
 
   def display_on_first_round
     if @round == 1
-      puts "#{human.name}'s moves:   #{computer.name}'s moves:"
+      player_moves
       new_line
-      indent "Lets get started!" 
+      indent MESSAGES["start"]
     end
   end
 
@@ -95,7 +95,7 @@ module RPSGameDisplay
   def display_round_winner
     return display_tie if check_winning_move == 'tie'
     winner = return_round_winner
-    special_output("#{winner.name} won the round!")
+    special_output("#{winner.name} won the round")
   end
 
   def display_game_winner
@@ -108,12 +108,15 @@ module RPSGameDisplay
     winner_outline "#{participant.name} wins the game!"
   end
 
+  def player_moves
+    puts "#{human.name}'s moves:   #{computer.name}'s moves:"
+  end
+
   def display_move_history
     clear_screen
     hmn_moves = human.move_history
     cpu_moves = computer.move_history
-
-    puts "#{human.name}'s moves:   #{computer.name}'s moves:"
+    player_moves
     new_line
     (0...hmn_moves.size).each do |i|
       indent "Round #{i + 1}: #{hmn_moves[i]} VS #{cpu_moves[i]}"
