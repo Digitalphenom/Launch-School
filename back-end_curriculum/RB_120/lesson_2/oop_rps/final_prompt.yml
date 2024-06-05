@@ -1,5 +1,5 @@
 welcome: "Welcome to Rock, Paper, Scissors, LIZARD, SPOCK!"
-make_choice: "Please choose: 1 for Rock | 2 for Paper | 3 for Scissors | 4 for Lizard | 5 for Spock:"
+make_choice: "Choose: 1) Rock | 2) Paper | 3) Scissors | 4) Lizard | 5) Spock:"
 another_game?: "Would you like to play again? (y/n)"
 invalid_choice: "Sorry, invalid choice."
 valid_name?: "Make sure to enter a valid name."
