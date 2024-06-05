@@ -79,6 +79,14 @@ module RPSGameDisplay
     new_line
   end
 
+  def display_on_first_round
+    if @round == 1
+      puts "#{human.name}'s moves:   #{computer.name}'s moves:"
+      new_line
+      indent "Lets get started!" 
+    end
+  end
+
   def display_round_dialogue
     keys = return_dialogue_keys
     display_dialogue(keys)
@@ -388,6 +396,7 @@ class RPSGame
   def start_game
     total = (total_rounds.to_i + 1)
     until @round == total
+      display_on_first_round
       display_rounds
       hand_choice
       add_human_computer_moves
