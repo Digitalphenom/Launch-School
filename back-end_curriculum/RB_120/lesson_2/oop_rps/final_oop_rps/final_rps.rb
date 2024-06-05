@@ -1,46 +1,42 @@
 require "yaml"
-require 'pry'
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
 module SpecialMoves
-  def r2d2
-    [1, 3, 4, 5]
+  def augustus
+    [1, 2, 3, 3, 4, 5, 5]
   end
 
-  def hal
-    [1, 3, 4, 5, 5]
+  def nero
+    [1, 5, 5, 5, 5]
   end
 
-  def number5
-    [1, 3, 4, 4, 5]
+  def caligula
+    [1, 1, 1, 4, 5, 5]
   end
 
-  def chappie
-    [1, 1, 2, 3, 5, 5]
+  def marcus_aurelius
+    [2, 3, 3, 4, 4]
   end
 
-  def sonny
-    [2, 3, 3]
+  def spartacus
+    [3, 3, 3, 4, 5]
   end
 end
 
 module RPSGameDisplay
-  DIALOGUE = {  ["rock", "scissors"] => "ROCK crushes SCISSORS",
-                ["rock", "lizard"] => "ROCK crushes LIZARD",
-                ["paper", "rock"] => "PAPER covers ROCK",
-                ["paper", "spock"] => "PAPER disproves SPOCK",
-                ["scissors", "paper"] => "SCISSORS cuts PAPER",
-                ["scissors", "lizard"] => "SCISSORS decapitates LIZARD",
-                ["lizard", "paper"] => "LIZARD eats PAPER",
-                ["lizard", "spock"] => "LIZARD poisons SPOCK",
-                ["spock", "rock"] => "SPOCK vaporizes ROCK",
-                ["spock", "scissors"] => "SPOCK smashes SCISSORS" }
+  def display_dialogue(keys)
+    new_line
+    keys = keys.join("_")
+    indent_indent MESSAGES[keys]
+    new_line
+  end
 
-  def display_dialogue(value)
+  def display_pick_opponent
     new_line
-    indent_indent DIALOGUE[value]
+    indent_indent "#{human.name}, enter a numeric value to pick your opponent"
     new_line
+    puts MESSAGES["opponent_choice"]
   end
 
   def clear_screen
@@ -68,23 +64,33 @@ module RPSGameDisplay
 
   def display_rounds
     new_line
-    indent("Round: #{@round}")
+    indent("Round: #{@round} of #{@total_rounds}")
   end
 
   def display_welcome_message
-    puts "Hi #{human.name}"
     puts MESSAGES["welcome"]
     new_line
-    indent_indent "Your opponent will be #{computer.name}"
+  end
+
+  def display_opponent
+    new_line
+    indent_indent "#{human.name} your opponent will be #{computer.name}"
+    new_line
+  end
+
+  def display_play_style
+    cpu_name = computer.name.downcase
+    description = MESSAGES[cpu_name]
+    indent_indent "           PlayStyle"
+    wrap_text(description)
     new_line
   end
 
   def display_on_first_round
-    if @round == 1
-      player_moves
-      new_line
-      indent MESSAGES["start"]
-    end
+    return unless @round == 1
+    display_human_computer_name
+    new_line
+    indent MESSAGES["start"]
   end
 
   def display_round_dialogue
@@ -99,16 +105,16 @@ module RPSGameDisplay
   end
 
   def display_game_winner
-    return tie_outline "Tie Game" if human.score == computer.score
+    return bannerize("Tie Game", " ") if human.score == computer.score
     return display_winner(human) if human.score > computer.score
     display_winner(computer)
   end
 
   def display_winner(participant)
-    winner_outline "#{participant.name} wins the game!"
+    bannerize("#{participant.name} wins the game!", "*")
   end
 
-  def player_moves
+  def display_human_computer_name
     puts "#{human.name}'s moves:   #{computer.name}'s moves:"
   end
 
@@ -116,10 +122,10 @@ module RPSGameDisplay
     clear_screen
     hmn_moves = human.move_history
     cpu_moves = computer.move_history
-    player_moves
+    display_human_computer_name
     new_line
     (0...hmn_moves.size).each do |i|
-      indent "Round #{i + 1}: #{hmn_moves[i]} VS #{cpu_moves[i]}"
+      indent "Round #{i + 1}: #{hmn_moves[i]} vs #{cpu_moves[i]}"
     end
     nil
   end
@@ -130,33 +136,29 @@ module Formatable
     puts
   end
 
-  def special_output(value)
-    puts " ---- #{value} -----"
+  def special_output(text)
+    puts " ---- #{text} -----"
   end
 
-  def indent(value)
-    puts "  #{value}"
+  def indent(text)
+    puts "  #{text}"
   end
 
-  def indent_indent(value)
-    puts "    #{value}"
+  def indent_indent(text)
+    puts "    #{text}"
   end
 
-  def winner_outline(value)
-    bannerize(value, "*")
+  def wrap_text(text)
+    text.each_line { |line|  indent_indent line }
   end
 
-  def tie_outline(value)
-    bannerize(value, " ")
-  end
-
-  def bannerize(str, char)
-    horizontals = "+=#{'=' * str.size}=+"
+  def bannerize(text, char)
+    horizontals = "+=#{'=' * text.size}=+"
     new_line
     indent_indent horizontals
-    indent_indent "#{char} #{' ' * str.size} #{char}"
-    indent_indent "#{char} #{str} #{char}"
-    indent_indent "#{char} #{' ' * str.size} #{char}"
+    indent_indent "#{char} #{' ' * text.size} #{char}"
+    indent_indent "#{char} #{text} #{char}"
+    indent_indent "#{char} #{' ' * text.size} #{char}"
     indent_indent horizontals
   end
 end
@@ -209,7 +211,6 @@ class Player
   include Formatable
 
   def initialize
-    set_name
     @move_history = []
     @score = 0
   end
@@ -241,7 +242,7 @@ class Human < Player
     valid_keys = Move::VALUES.keys
     loop do
       new_line
-      puts MESSAGES["make_choice"]
+      puts MESSAGES["hand_choice"]
       choice = gets.chomp.to_i
       break if valid_keys.include?(choice)
       puts MESSAGES["invalid_choice"]
@@ -249,18 +250,15 @@ class Human < Player
     self.move = Move.new(Move::VALUES[choice])
   end
 
-  private
-
   def set_name
     name = ""
     loop do
-      puts MESSAGES["your_name"]
-      new_line
+      print MESSAGES["your_name"]
       name = gets.chomp
       break unless valid_name?(name)
       puts MESSAGES["valid_name?"]
     end
-    self.name = name
+    self.name = name.capitalize
   end
 
   def valid_name?(name)
@@ -276,10 +274,9 @@ class Computer < Player
     self.move = Move.new(Move::VALUES[computer_value])
   end
 
-  private
-
-  def set_name
-    self.name = ["R2D2", "Hal", "Chappie", "Sonny", "Number5"].sample
+  def set_player
+    choice = gets.chomp.to_i
+    self.name = MESSAGES[choice].capitalize
   end
 end
 
@@ -291,14 +288,13 @@ class RPSGame
   end
 
   def play
-    clear_screen
-    display_welcome_message
+    start_screen
     loop do
       start_game
       display_game_winner
       break clear_screen unless play_again?
+      new_opponent
       reset_stats
-      clear_screen
     end
     display_goodbye_message
   end
@@ -307,6 +303,54 @@ class RPSGame
 
   include Formatable
   include RPSGameDisplay
+
+  def start_screen
+    clear_screen
+    display_welcome_message
+    human.set_name
+    pick_opponent
+    your_opponent
+  end
+
+  def start_game
+    total = (total_rounds.to_i + 1)
+    until @round == total
+      display_on_first_round
+      display_rounds
+      hand_choice
+      add_human_computer_moves
+      track_wins
+      game_stats
+      increment_round
+    end
+  end
+
+  def new_opponent
+    value = new_opponent?
+    pick_opponent if value
+    your_opponent if value
+  end
+
+  def your_opponent
+    display_opponent
+    display_play_style
+  end
+
+  def pick_opponent
+    display_pick_opponent
+    computer.set_player
+  end
+
+  def new_opponent?
+    clear_screen
+    loop do
+      puts MESSAGES["opponent"]
+      choice = gets.chomp
+      return true if choice == 'y'
+      return false if choice == 'n'
+      puts MESSAGES["invalid_choice"]
+    end
+  end
 
   def check_winning_move
     return "tie" if human.move.equal?(computer.move)
@@ -329,7 +373,8 @@ class RPSGame
     participant.add_to_history(my_move)
   end
 
-  def valid_rounds?(input)
+  def valid_rounds?
+    input = @total_rounds
     if input.match?(/[A-Za-z]/) || input.empty? || input.to_i.zero?
       puts MESSAGES["valid_number"]
       return true
@@ -340,10 +385,10 @@ class RPSGame
   def total_rounds
     display_ask_for_rounds
     loop do
-      input = gets.chomp
-      next display_ask_for_rounds if valid_rounds?(input)
+      @total_rounds = gets.chomp
+      next display_ask_for_rounds if valid_rounds?
       clear_screen
-      return input
+      return @total_rounds
     end
   end
 
@@ -394,19 +439,6 @@ class RPSGame
 
   def increment_round
     @round += 1
-  end
-
-  def start_game
-    total = (total_rounds.to_i + 1)
-    until @round == total
-      display_on_first_round
-      display_rounds
-      hand_choice
-      add_human_computer_moves
-      track_wins
-      game_stats
-      increment_round
-    end
   end
 
   attr_accessor :human, :computer, :round
