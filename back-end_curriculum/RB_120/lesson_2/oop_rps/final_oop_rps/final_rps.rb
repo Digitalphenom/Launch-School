@@ -92,7 +92,7 @@ module RPSGameDisplay
 
   def display_on_first_round
     return unless @round == 1
-    display_human_computer_name
+    display_participant_names
     new_line
     indent MESSAGES["start"]
   end
@@ -118,7 +118,7 @@ module RPSGameDisplay
     bannerize("#{participant.name} wins the game!", "*")
   end
 
-  def display_human_computer_name
+  def display_participant_names
     puts "#{human.name}'s moves:   #{computer.name}'s moves:"
   end
 
@@ -126,7 +126,7 @@ module RPSGameDisplay
     clear_screen
     hmn_moves = human.move_history
     cpu_moves = computer.move_history
-    display_human_computer_name
+    display_participant_names
     new_line
     (0...hmn_moves.size).each do |i|
       indent "Round #{i + 1}: #{hmn_moves[i]} vs #{cpu_moves[i]}"
