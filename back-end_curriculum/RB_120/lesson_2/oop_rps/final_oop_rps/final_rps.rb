@@ -51,11 +51,15 @@ module RPSGameDisplay
     special_output MESSAGES["even"]
   end
 
-  def display_score
+  def display_participant_scores
     new_line
-    print "  #{human.name} Score: #{human.score}"
-    print "  #{computer.name} Score: #{computer.score}"
+    player_score(human)
+    player_score(computer)
     new_line
+  end
+
+  def player_score(participant)
+    print "  #{participant.name} Score: #{participant.score}"
   end
 
   def display_ask_for_rounds
@@ -417,7 +421,7 @@ class RPSGame
     display_move_history
     display_round_dialogue
     display_round_winner
-    display_score
+    display_participant_scores
   end
 
   def add_human_computer_moves
