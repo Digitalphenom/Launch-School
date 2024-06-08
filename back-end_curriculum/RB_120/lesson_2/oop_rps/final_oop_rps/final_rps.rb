@@ -2,28 +2,6 @@ require "yaml"
 
 MESSAGES = YAML.load_file('final_prompt.yml')
 
-module SpecialMoves
-  def augustus
-    [1, 2, 3, 3, 4, 5, 5]
-  end
-
-  def nero
-    [1, 5, 5, 5, 5]
-  end
-
-  def caligula
-    [1, 1, 1, 4, 5, 5]
-  end
-
-  def marcus_aurelius
-    [2, 3, 3, 4, 4]
-  end
-
-  def spartacus
-    [3, 3, 3, 4, 5]
-  end
-end
-
 module RPSGameDisplay
   def display_dialogue(keys)
     new_line
@@ -34,7 +12,7 @@ module RPSGameDisplay
 
   def display_pick_opponent
     new_line
-    indent_indent "#{human.name}, enter a numeric value to pick your opponent"
+    indent_indent format(MESSAGES["pick_opponent_prompt"], human.name)
     new_line
     puts MESSAGES["opponent_choice"]
   end
@@ -44,7 +22,7 @@ module RPSGameDisplay
   end
 
   def display_goodbye_message
-    puts "#{human.name} Thanks For Playing!"
+    puts format(MESSAGES["end_game"], human.name)
   end
 
   def display_tie
@@ -59,7 +37,7 @@ module RPSGameDisplay
   end
 
   def player_score(participant)
-    print "  #{participant.name} Score: #{participant.score}"
+    print format(MESSAGES["player_score"], participant.name, participant.score)
   end
 
   def display_ask_for_rounds
@@ -68,7 +46,8 @@ module RPSGameDisplay
 
   def display_rounds
     new_line
-    indent("Round: #{@round} of #{@total_rounds}")
+    indent format(MESSAGES["round_of"], @round, @total_rounds)
+    new_line
   end
 
   def display_welcome_message
@@ -78,7 +57,7 @@ module RPSGameDisplay
 
   def display_opponent
     new_line
-    indent_indent "#{human.name} your opponent will be #{computer.name}"
+    indent_indent format(MESSAGES["your_opponent"], human.name, computer.name)
     new_line
   end
 
@@ -91,7 +70,6 @@ module RPSGameDisplay
   end
 
   def display_on_first_round
-    return unless @round == 1
     display_participant_names
     new_line
     indent MESSAGES["start"]
@@ -105,7 +83,7 @@ module RPSGameDisplay
   def display_round_winner
     return display_tie if check_winning_move == 'tie'
     winner = return_round_winner
-    special_output("#{winner.name} won the round")
+    special_output format(MESSAGES["win_announcement"], winner.name)
   end
 
   def display_game_winner
@@ -119,7 +97,7 @@ module RPSGameDisplay
   end
 
   def display_participant_names
-    puts "#{human.name}'s moves:   #{computer.name}'s moves:"
+    puts format(MESSAGES["move_display"], human.name, computer.name)
   end
 
   def display_move_history
@@ -129,13 +107,15 @@ module RPSGameDisplay
     display_participant_names
     new_line
     (0...hmn_moves.size).each do |i|
-      indent "Round #{i + 1}: #{hmn_moves[i]} vs #{cpu_moves[i]}"
+      indent format(MESSAGES["each_round"], i + 1, hmn_moves[i], cpu_moves[i])
     end
     nil
   end
 end
 
 module Formatable
+  private
+
   def new_line
     puts
   end
@@ -168,6 +148,8 @@ module Formatable
 end
 
 class Move
+  include Comparable
+
   VALUES = {  1 => 'rock',
               2 => 'paper',
               3 => 'scissors',
@@ -194,25 +176,23 @@ class Move
     self == other
   end
 
-  def greater?(other)
+  def defeats?(other)
     self > other
   end
 
   protected
 
-  def >(other)
-    WINNING_MOVES[value].include?(other.value)
+  def <=>(other)
+    value <=> other.value
   end
 
-  def ==(other)
-    value == other.value
+  def >(other)
+    WINNING_MOVES[value].include?(other.value)
   end
 end
 
 class Player
   attr_reader :name, :move, :score, :move_history
-
-  include Formatable
 
   def initialize
     @move_history = []
@@ -245,7 +225,6 @@ class Human < Player
     choice = nil
     valid_keys = Move::VALUES.keys
     loop do
-      new_line
       puts MESSAGES["hand_choice"]
       choice = gets.chomp.to_i
       break if valid_keys.include?(choice)
@@ -259,32 +238,53 @@ class Human < Player
     loop do
       print MESSAGES["your_name"]
       name = gets.chomp
-      break unless valid_name?(name)
+      break unless invalid_name?(name)
       puts MESSAGES["valid_name?"]
     end
     self.name = name.capitalize
   end
 
-  def valid_name?(name)
+  def invalid_name?(name)
     name.empty? || name.match?(/[0-9|\s]/)
   end
 end
 
 class Computer < Player
-  extend SpecialMoves
+  SPECIAL_MOVES = {  'augustus' => [1, 2, 3, 3, 4, 5, 5],
+                     'nero' => [1, 5, 5, 5, 5],
+                     'caligula' => [1, 1, 1, 4, 5, 5],
+                     'marcus_aurelius' => [2, 3, 3, 4, 4],
+                     'spartacus' => [3, 3, 3, 4, 5] }
+
+  COMPUTER_PLAYERS = {  1 => 'augustus',
+                        2 => 'nero',
+                        3 => 'caligula',
+                        4 => 'marcus_aurelius',
+                        5 => 'spartacus' }
 
   def choice
-    computer_value = Computer.send(name.downcase).sample
+    computer_value = SPECIAL_MOVES[name.downcase].sample
     self.move = Move.new(Move::VALUES[computer_value])
   end
 
   def set_player
-    choice = gets.chomp.to_i
-    self.name = MESSAGES[choice].capitalize
+    choice = ''
+    loop do
+      choice = gets.chomp.to_i
+      break unless invalid_number?(choice)
+      puts MESSAGES["valid_number"]
+    end
+    self.name = COMPUTER_PLAYERS[choice].capitalize
+  end
+
+  def invalid_number?(choice)
+    choice > 5 || choice < 1
   end
 end
 
 class RPSGame
+  include Formatable
+
   def initialize
     @human = Human.new
     @computer = Computer.new
@@ -305,7 +305,6 @@ class RPSGame
 
   private
 
-  include Formatable
   include RPSGameDisplay
 
   def start_screen
@@ -318,8 +317,8 @@ class RPSGame
 
   def start_game
     total = (total_rounds.to_i + 1)
+    display_on_first_round
     until @round == total
-      display_on_first_round
       display_rounds
       hand_choice
       add_human_computer_moves
@@ -358,7 +357,7 @@ class RPSGame
 
   def check_winning_move
     return "tie" if human.move.equal?(computer.move)
-    human.move.greater?(computer.move)
+    human.move.defeats?(computer.move)
   end
 
   def return_round_winner
