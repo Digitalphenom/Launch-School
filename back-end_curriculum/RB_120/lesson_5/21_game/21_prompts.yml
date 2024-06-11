@@ -1,0 +1,19 @@
+welcome: Welcome to 21
+name:  Enter Your Name
+start_game: Enter 1 to begin the game.
+hit_or_stay: Would you like to HIT or Stay?
+options: Press 1) for HIT | Press 2) for Stay
+instructions: Twenty-One is a card game where the goal is to get your hand value as close to 21 as possible without going over. The game involves a dealer and a player, each starting with 2 cards from a 52-card deck. The aim is  draw cards strategically to reach 21 without exceeding it.
+play_again?: Would you like to play again?
+play_again_choice: Enter 1 for YES | 2 for NO
+exit_screen: Thanks for playing!
+dealer_stays: "\n The Dealer stays"
+dealer_hits: "\nThe Dealer Hits!"
+dealer_hits_again: "\nThe Dealer Hits AGAIN!!"
+dealer_turn: "Dealers Turn..."
+dealer_cards: "\nDealer Cards:"
+win_outline: "**********************"
+seperation_line: "----------------------"
+running_total:
+  total: "Your running total is: %s"
+  cards: "%s's Cards:"
