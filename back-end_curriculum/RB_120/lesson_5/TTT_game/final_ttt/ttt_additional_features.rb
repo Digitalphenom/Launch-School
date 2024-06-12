@@ -1,5 +1,5 @@
 require 'yaml'
-require 'pry'
+
 MESSAGES = YAML.load_file('ttt_prompt.yml')
 
 module Formatable
@@ -31,9 +31,10 @@ module Formatable
     indent_indent horizontals
   end
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 
 module TTTGameDisplay
+  private
+
   def display_who_moves_first
     indent_indent format(MESSAGES["who_first"], human.name, computer.name)
     new_line
@@ -63,12 +64,13 @@ module TTTGameDisplay
 
     case board.winning_marker
     when human.marker
-      puts MESSAGES["human_won"]
+      bannerize(MESSAGES["human_won"], "*")
     when computer.marker
-      puts MESSAGES["computer_won"]
+      bannerize(MESSAGES["computer_won"], "X")
     else
-      puts MESSAGES["tie"]
+      bannerize(MESSAGES["tie"], " ")
     end
+    new_line
   end
 
   def display_play_again
@@ -78,7 +80,8 @@ module TTTGameDisplay
 
   def display_board
     clear
-    puts format(MESSAGES["player_markers"], human.marker, computer.name, computer.marker)
+    puts format(MESSAGES["player_markers"], human.marker, computer.name,
+                computer.marker)
     new_line
     board.draw_board
     new_line
@@ -88,13 +91,15 @@ module TTTGameDisplay
     puts format(MESSAGES["choose_square"], board.unmarked_keys.join(', '))
   end
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 module ComputerStrategicMoves
   def place_piece(human, computer, board)
     find_strategic_square(board, [computer, human]) ||
-    attack_fifth_square_if_open(board) ||
-    random_square(board)
+      attack_fifth_square_if_open(board) ||
+      random_square(board)
   end
+
+  private
 
   def find_strategic_square(board, players)
     players.each do |player|
@@ -114,11 +119,13 @@ module ComputerStrategicMoves
   end
 
   def two_in_a_line?(line, player, brd)
-    brd.squares.values_at(*line).count { |sqr| sqr.marker == player.marker} == 2
+    brd.squares.values_at(*line).count do |sqr|
+      sqr.marker == player.marker
+    end == 2
   end
 
   def first_open_square(line, brd)
-    brd.squares.select { |k, v| line.include?(k) && v.marker == " "}.keys.first
+    brd.squares.select { |k, v| line.include?(k) && v.marker == " " }.keys.first
   end
 
   def attack_fifth_square_if_open(board)
@@ -131,10 +138,9 @@ module ComputerStrategicMoves
 
   def random_square(board)
     board.unmarked_keys.sample
- end
+  end
 end
 
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 class Player
   attr_accessor :marker
   attr_reader :name
@@ -164,7 +170,7 @@ class Human < Player
     puts format(MESSAGES["hello_name"], name)
   end
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class Board
   attr_reader :squares
 
@@ -208,15 +214,14 @@ class Board
     unmarked_keys.empty?
   end
 
-  def someone_won?
-    !!winning_marker
-  end
-
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
 
-  # returns winning marker or nil
+  def someone_won?
+    !!winning_marker
+  end
+
   def winning_marker
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
@@ -233,11 +238,11 @@ class Board
     x || o
   end
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-class Square
-  INITIAL_MARKER = ' '.freeze
 
+class Square
   attr_accessor :marker
+
+  INITIAL_MARKER = ' '.freeze
 
   def initialize(marker = INITIAL_MARKER)
     @marker = marker
@@ -251,7 +256,7 @@ class Square
     marker == INITIAL_MARKER
   end
 end
-#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class TTTGame
   attr_reader :board, :human, :computer
 
@@ -300,7 +305,7 @@ class TTTGame
     end
     display_result
   end
-  
+
   def alternate_turns
     turns.shift ? human_moves : computer_moves
   end
@@ -389,4 +394,3 @@ class TTTGame
 end
 
 TTTGame.new.play
-
