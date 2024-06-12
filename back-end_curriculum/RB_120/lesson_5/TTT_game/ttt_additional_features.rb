@@ -92,16 +92,29 @@ end
 module Moveable
   def cpu_places_piece!(human, computer)
     square = nil
-
     Board::WINNING_LINES.each do |line|
-      square = attack_or_defend(line, human, computer)
+      square = attack(line, human, computer)
       break if square
     end
-    square || fifth_square_or_random()
+    return square if square
+
+    Board::WINNING_LINES.each do |line|
+      square = defend(line, human, computer)
+      break if square
+    end
+    return square if square
+    fifth_square_or_random
   end
 
-  def attack_or_defend(line, hmn, cpu)
-    if attack_square?(line, cpu) || defend_square?(line, hmn)
+  def attack(line, hmn, cpu)
+    if search_attack_line(line, cpu)
+      return attack_or_defend_line(line).keys.first
+    end
+    nil
+  end
+  
+  def defend(line, hmn, cpu)
+    if search_defend_line(line, hmn)
       return attack_or_defend_line(line).keys.first
     end
     nil
@@ -112,25 +125,24 @@ module Moveable
       line.include?(k) && v.marker == " "
     end
   end
+  
+  def search_attack_line(line, computer)
+    find_consecutive_squares(line, computer)
+  end
+  
+  def search_defend_line(line, human)
+    find_consecutive_squares(line, human)
+  end
+  
+  def find_consecutive_squares(line, player)
+    sqr = @squares.values_at(*line).select { |sqr| sqr.marker == player.marker }
+    sqr.count == 2
+  end
 
   def fifth_square_or_random
     @squares[5].marker == " " ? find_fifth_square() : unmarked_keys.sample
   end
-
-  def attack_square?(line, computer)
-    count_square?(line, computer)
-  end
-
-  def defend_square?(line, human)
-    count_square?(line, human)
-  end
-
-  def count_square?(line, player)
-    @squares.values_at(*line).select do |sqr|
-      sqr.marker == player.marker
-    end.count == 2
-  end
-
+  
   def find_fifth_square
     squares.keys[4]
   end
