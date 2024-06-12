@@ -91,56 +91,46 @@ end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
 module ComputerStrategicMoves
   def place_piece(human, computer, board)
-    square = nil
-    Board::WINNING_LINES.each do |line|
-      square = attack(line, human, computer, board)
-      break if square
-    end
-    return square if square
-
-    Board::WINNING_LINES.each do |line|
-      square = defend(line, human, computer, board)
-      break if square
-    end
-    return square if square
-    return attack_fifth_square(board) if open_fifth_square?(board)
-    random(board)
+    find_strategic_square(board, [computer, human]) ||
+    attack_fifth_square_if_open(board) ||
+    random_square(board)
   end
 
-  def attack(line, hmn, cpu, brd)
-    if find_consecutive_squares(line, cpu, brd)
-      return attack_or_defend_line(line, brd).keys.first
-    end
-    nil
-  end
-  
-  def defend(line, hmn, cpu, brd)
-    if find_consecutive_squares(line, hmn, brd)
-      return attack_or_defend_line(line, brd).keys.first
+  def find_strategic_square(board, players)
+    players.each do |player|
+      square = attack_or_defend_square(board, player)
+      return square if square
     end
     nil
   end
 
-  def attack_or_defend_line(line, brd)
-    brd.squares.select { |k, v| line.include?(k) && v.marker == " " }
+  def attack_or_defend_square(board, player)
+    Board::WINNING_LINES.each do |line|
+      if two_in_a_line?(line, player, board)
+        return first_open_square(line, board)
+      end
+    end
+    nil
   end
 
-  def find_consecutive_squares(line, player, brd)
-    sqr = 
-    brd.squares.values_at(*line).select { |sqr| sqr.marker == player.marker }
-    sqr.count == 2
+  def two_in_a_line?(line, player, brd)
+    brd.squares.values_at(*line).count { |sqr| sqr.marker == player.marker} == 2
+  end
+
+  def first_open_square(line, brd)
+    brd.squares.select { |k, v| line.include?(k) && v.marker == " "}.keys.first
+  end
+
+  def attack_fifth_square_if_open(board)
+    return board.squares.keys[4] if open_fifth_square?(board)
   end
 
   def open_fifth_square?(brd)
     brd.squares[5].marker == " "
   end
 
-  def attack_fifth_square(brd)
-    brd.squares.keys[4]
-  end
-
-  def random(brd)
-    brd.unmarked_keys.sample
+  def random_square(board)
+    board.unmarked_keys.sample
  end
 end
 
