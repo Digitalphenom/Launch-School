@@ -89,63 +89,59 @@ module TTTGameDisplay
   end
 end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
-module Moveable
-  def cpu_places_piece!(human, computer)
+module ComputerStrategicMoves
+  def place_piece(human, computer, board)
     square = nil
     Board::WINNING_LINES.each do |line|
-      square = attack(line, human, computer)
+      square = attack(line, human, computer, board)
       break if square
     end
     return square if square
 
     Board::WINNING_LINES.each do |line|
-      square = defend(line, human, computer)
+      square = defend(line, human, computer, board)
       break if square
     end
     return square if square
-    fifth_square_or_random
+    return attack_fifth_square(board) if open_fifth_square?(board)
+    random(board)
   end
 
-  def attack(line, hmn, cpu)
-    if search_attack_line(line, cpu)
-      return attack_or_defend_line(line).keys.first
+  def attack(line, hmn, cpu, brd)
+    if find_consecutive_squares(line, cpu, brd)
+      return attack_or_defend_line(line, brd).keys.first
     end
     nil
   end
   
-  def defend(line, hmn, cpu)
-    if search_defend_line(line, hmn)
-      return attack_or_defend_line(line).keys.first
+  def defend(line, hmn, cpu, brd)
+    if find_consecutive_squares(line, hmn, brd)
+      return attack_or_defend_line(line, brd).keys.first
     end
     nil
   end
 
-  def attack_or_defend_line(line)
-    @squares.select do |k, v|
-      line.include?(k) && v.marker == " "
-    end
+  def attack_or_defend_line(line, brd)
+    brd.squares.select { |k, v| line.include?(k) && v.marker == " " }
   end
-  
-  def search_attack_line(line, computer)
-    find_consecutive_squares(line, computer)
-  end
-  
-  def search_defend_line(line, human)
-    find_consecutive_squares(line, human)
-  end
-  
-  def find_consecutive_squares(line, player)
-    sqr = @squares.values_at(*line).select { |sqr| sqr.marker == player.marker }
+
+  def find_consecutive_squares(line, player, brd)
+    sqr = 
+    brd.squares.values_at(*line).select { |sqr| sqr.marker == player.marker }
     sqr.count == 2
   end
 
-  def fifth_square_or_random
-    @squares[5].marker == " " ? find_fifth_square() : unmarked_keys.sample
+  def open_fifth_square?(brd)
+    brd.squares[5].marker == " "
   end
-  
-  def find_fifth_square
-    squares.keys[4]
+
+  def attack_fifth_square(brd)
+    brd.squares.keys[4]
   end
+
+  def random(brd)
+    brd.unmarked_keys.sample
+ end
 end
 
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -159,6 +155,8 @@ class Player
 end
 
 class Computer < Player
+  include ComputerStrategicMoves
+
   COMPUTER_NAMES = ["Chris Lee",
                     "Tony Robinson",
                     "Martha Stewart",
@@ -183,8 +181,6 @@ class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # colums
                   [[1, 5, 9], [3, 5, 7]]
-
-  include Moveable
 
   def initialize
     @squares = {}
@@ -335,7 +331,7 @@ class TTTGame
   end
 
   def computer_piece
-    board.cpu_places_piece!(human, computer)
+    computer.place_piece(human, computer, board)
   end
 
   def choose_marker
