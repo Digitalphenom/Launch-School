@@ -1,25 +1,26 @@
+require 'yaml'
 MESSAGES = YAML.load_file('ttt_prompt.yml')
 
 module Formatable
   private
 
-  def self.new_line
+  def new_line
     puts
   end
 
-  def self.special_output(text)
+  def special_output(text)
     puts " ---- #{text} -----"
   end
 
-  def self.indent(text)
+  def indent(text)
     puts "  #{text}"
   end
 
-  def self.indent_indent(text)
+  def indent_indent(text)
     puts "    #{text}"
   end
 
-  def self.wrap_text(text)
+  def wrap_text(text)
     text.each_line { |line|  indent_indent line }
   end
 
@@ -37,21 +38,23 @@ end
 
 module TTTGameDisplay
   def display_who_moves_first
-    puts "      Who goes first #{human.name} or #{computer.name}?"
-    puts
-    puts "Press: 1 for #{human.name} | 2 for #{computer.name}"
+    indent_indent format(MESSAGES["who_first"], human.name, computer.name)
+    new_line
+    puts format(MESSAGES["press_option"], human.name, computer.name)
   end
 
   def display_welcome_message
-    puts "Hello#{human.name}, welcome to Tic Tac Toe!"
+    puts format(MESSAGES["welcome"])
   end
 
   def display_opponent
-    puts "Your opponent today will be #{computer.name}"
+    new_line
+    puts format(MESSAGES["opponent_announcement"], computer.name)
+    new_line
   end
 
   def display_goodbye_message
-    puts 'Thanks for playing!'
+    puts MESSAGES["thanks_for_playing"]
   end
 
   def clear
@@ -59,7 +62,7 @@ module TTTGameDisplay
   end
 
   def display_choose_unmarked
-    puts "Chose a square between #{board.unmarked_keys.join(', ')}:"
+    puts format(MESSAGES["choose_square"], board.unmarked_keys.join(', '))
   end
 
   def display_result
@@ -67,24 +70,24 @@ module TTTGameDisplay
 
     case board.winning_marker
     when human.marker
-      puts 'You won!'
+      puts MESSAGES["human_won"]
     when computer.marker
-      puts 'Computer won!'
+      puts MESSAGES["computer_won"]
     else
-      puts 'Its a tie!'
+      puts MESSAGES["tie"]
     end
   end
 
   def display_play_again
-    puts 'Let\'s play again'
+    puts MESSAGES["play_again"]
     puts
   end
 
   def display_board
-    puts "You're #{human.marker}. #{computer.name} is #{computer.marker}"
-    puts
+    puts format(MESSAGES["player_markers"], human.marker, computer.name, computer.marker)
+    new_line
     board.draw_board
-    puts
+    new_line
   end
 end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -158,9 +161,9 @@ end
 
 class Human < Player
   def set_name
-    puts "What is your name?"
+    print MESSAGES["name?"]
     @name = gets.chomp
-    puts "Hey #{name} lets get started!"
+    puts format(MESSAGES["hello_name"], name)
   end
 end
 #‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
@@ -256,6 +259,7 @@ end
 class TTTGame
   attr_reader :board, :human, :computer
 
+  include Formatable
   include TTTGameDisplay
 
   def initialize
@@ -277,7 +281,7 @@ class TTTGame
 
   def choose_marker
     loop do
-      puts 'Would you like to be X or O'
+      puts MESSAGES["marker_choice"]
       n = gets.chomp.upcase
       next unless validate_marker(n)
 
@@ -289,7 +293,7 @@ class TTTGame
 
   def validate_marker(n)
     unless n == 'X' || n == 'O'
-      puts 'Please Enter a Valid Marker'
+      puts MESSAGES["invalid_marker"]
       return false
     end
     true
@@ -333,8 +337,8 @@ class TTTGame
     loop do
       square = gets.chomp.to_i
       break if board.unmarked_keys.include?(square)
-
-      puts 'Sorry, that\'s not a valid choice.'
+      
+      puts MESSAGES["invalid_choice"]
     end
     board[square] = human.marker
   end
@@ -350,16 +354,14 @@ class TTTGame
   def play_again?
     answer = ''
     loop do
-      puts 'Would you like to play again? (y/n)'
+      puts MESSAGES["play_again"]
       answer = gets.chomp.downcase
       break if %w(y n).include?(answer)
 
-      puts 'Sorry, must be y or n'
+      puts MESSAGES["invalid"]
     end
     answer == 'y'
   end
-
-
 
   def reset
     board.reset
@@ -404,3 +406,4 @@ class TTTGame
 end
 
 TTTGame.new.play
+
