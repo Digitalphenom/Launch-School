@@ -1,4 +1,5 @@
 require 'yaml'
+require 'pry'
 
 MESSAGES = YAML.load_file('ttt_prompt.yml')
 
@@ -13,12 +14,20 @@ module Formatable
     puts " ---- #{text} -----"
   end
 
+  def arrow(text)
+    puts "=> #{text}"
+  end
+
   def indent(text)
     puts "  #{text}"
   end
 
   def indent_indent(text)
     puts "    #{text}"
+  end
+
+  def alt_print(text)
+    print "  #{text}"
   end
 
   def bannerize(text, char)
@@ -29,66 +38,6 @@ module Formatable
     indent_indent "#{char} #{text} #{char}"
     indent_indent "#{char} #{' ' * text.size} #{char}"
     indent_indent horizontals
-  end
-end
-
-module TTTGameDisplay
-  private
-
-  def display_who_moves_first
-    indent_indent format(MESSAGES["who_first"], human.name, computer.name)
-    new_line
-    puts format(MESSAGES["press_option"], human.name, computer.name)
-  end
-
-  def display_welcome_message
-    puts format(MESSAGES["welcome"])
-  end
-
-  def display_opponent
-    new_line
-    puts format(MESSAGES["opponent_announcement"], computer.name)
-    new_line
-  end
-
-  def display_goodbye_message
-    puts MESSAGES["thanks_for_playing"]
-  end
-
-  def clear
-    system 'clear'
-  end
-
-  def display_result
-    clear_screen_and_display_board
-
-    case board.winning_marker
-    when human.marker
-      bannerize(MESSAGES["human_won"], "*")
-    when computer.marker
-      bannerize(MESSAGES["computer_won"], "X")
-    else
-      bannerize(MESSAGES["tie"], " ")
-    end
-    new_line
-  end
-
-  def display_play_again
-    puts MESSAGES["play_again"]
-    new_line
-  end
-
-  def display_board
-    clear
-    puts format(MESSAGES["player_markers"], human.marker, computer.name,
-                computer.marker)
-    new_line
-    board.draw_board
-    new_line
-  end
-
-  def display_choose_squares
-    puts format(MESSAGES["choose_square"], board.unmarked_keys.join(', '))
   end
 end
 
@@ -141,6 +90,62 @@ module ComputerStrategicMoves
   end
 end
 
+module TTTGameDisplay
+  private
+
+  def display_who_moves_first
+    indent format(MESSAGES["who_first"], human.name, computer.name)
+    new_line
+    indent format(MESSAGES["press_option"], human.name, computer.name)
+  end
+
+  def display_welcome_message
+    indent format(MESSAGES["welcome"])
+  end
+
+  def display_opponent
+    new_line
+    indent format(MESSAGES["opponent_announcement"], computer.name)
+    new_line
+  end
+
+  def display_goodbye_message
+    puts MESSAGES["thanks_for_playing"]
+  end
+
+  def clear
+    system 'clear'
+  end
+
+  def display_result
+    clear_screen_and_display_board
+
+    case board.winning_marker
+    when human.marker
+      bannerize(MESSAGES["human_won"], "*")
+    when computer.marker
+      bannerize(MESSAGES["computer_won"], "X")
+    else
+      bannerize(MESSAGES["tie"], " ")
+    end
+    new_line
+  end
+
+  def display_play_again
+    puts MESSAGES["play_again"]
+    new_line
+  end
+
+  def display_board
+    clear
+    indent format(MESSAGES["player_markers"], human.marker, computer.name,
+                  computer.marker)
+    new_line
+    board.draw_board
+    new_line
+  end
+end
+
 class Player
   attr_accessor :marker
   attr_reader :name
@@ -155,19 +160,46 @@ class Computer < Player
 
   COMPUTER_NAMES = ["Chris Lee",
                     "Tony Robinson",
-                    "Martha Stewart",
-                    "Donald"]
+                    "Lex Fridman",
+                    "Frodo Baggins"]
 
   def set_name
     @name = COMPUTER_NAMES.sample
   end
+
+  def moves(hmn, cpu, board)
+    board[place_piece(hmn, cpu, board)] = marker
+  end
 end
 
 class Human < Player
+  include Formatable
+
   def set_name
-    print MESSAGES["name?"]
+    alt_print MESSAGES["name?"]
     @name = gets.chomp
-    puts format(MESSAGES["hello_name"], name)
+    new_line
+    indent format(MESSAGES["hello_name"], name)
+  end
+
+  def moves(board)
+    arrow format(MESSAGES["choose_square"], joinor(board))
+    square = nil
+    loop do
+      square = gets.chomp.to_i
+      break if board.unmarked_keys.include?(square)
+      puts MESSAGES["invalid_choice"]
+    end
+    board[square] = marker
+  end
+
+  def joinor(board)
+    str = board.unmarked_keys.join(', ')
+    if str.size > 1
+      str[-2] = ' or '
+      return str
+    end
+    str
   end
 end
 
@@ -186,17 +218,17 @@ class Board
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def draw_board
-    puts '         |       |'
-    puts "      #{@squares[1]}  |   #{@squares[2]}   |  #{@squares[3]}"
-    puts '         |       |'
-    puts '   ------+-------+------'
-    puts '         |       |'
-    puts "      #{@squares[4]}  |   #{@squares[5]}   |  #{@squares[6]}"
-    puts '         |       |'
-    puts '   ------+-------+------'
-    puts '         |       |'
-    puts "      #{@squares[7]}  |   #{@squares[8]}   |  #{@squares[9]}"
-    puts '         |       |'
+    puts '           |       |'
+    puts "        #{@squares[1]}  |   #{@squares[2]}   |  #{@squares[3]}"
+    puts '           |       |'
+    puts '     ------+-------+------'
+    puts '           |       |'
+    puts "        #{@squares[4]}  |   #{@squares[5]}   |  #{@squares[6]}"
+    puts '           |       |'
+    puts '     ------+-------+------'
+    puts '           |       |'
+    puts "        #{@squares[7]}  |   #{@squares[8]}   |  #{@squares[9]}"
+    puts '           |       |'
     puts
   end
   # rubocop:enable Metrics/AbcSize
@@ -258,8 +290,6 @@ class Square
 end
 
 class TTTGame
-  attr_reader :board, :human, :computer
-
   include Formatable
   include TTTGameDisplay
 
@@ -285,6 +315,7 @@ class TTTGame
     display_opponent
     choose_marker
     who_moves_first
+    enter_and_begin
     display_board
   end
 
@@ -293,9 +324,17 @@ class TTTGame
       game_loop
       break unless play_again?
       clear
-      reset
       who_moves_first
+      reset
+      enter_and_begin
+      display_board
     end
+  end
+
+  def enter_and_begin
+    indent MESSAGES["enter"]
+    gets
+    clear
   end
 
   def game_loop
@@ -307,31 +346,12 @@ class TTTGame
   end
 
   def alternate_turns
-    turns.shift ? human_moves : computer_moves
-  end
-
-  def human_moves
-    display_choose_squares
-    square = nil
-    loop do
-      square = gets.chomp.to_i
-      break if board.unmarked_keys.include?(square)
-      puts MESSAGES["invalid_choice"]
-    end
-    board[square] = human.marker
-  end
-
-  def computer_moves
-    board[computer_piece] = computer.marker
-  end
-
-  def computer_piece
-    computer.place_piece(human, computer, board)
+    turns.shift ? human.moves(board) : computer.moves(human, computer, board)
   end
 
   def choose_marker
     loop do
-      puts MESSAGES["marker_choice"]
+      indent MESSAGES["marker_choice"]
       chosen_marker = gets.chomp.upcase
       next unless valid_marker?(chosen_marker)
 
@@ -382,7 +402,6 @@ class TTTGame
   def reset
     board.reset
     reset_turns
-    clear_screen_and_display_board
   end
 
   def set_participant_names
@@ -391,6 +410,7 @@ class TTTGame
   end
 
   attr_accessor :turns
+  attr_reader :board, :human, :computer
 end
 
 TTTGame.new.play
