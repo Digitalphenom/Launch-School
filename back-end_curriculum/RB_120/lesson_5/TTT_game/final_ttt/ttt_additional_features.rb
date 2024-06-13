@@ -99,7 +99,7 @@ module TTTGameDisplay
     indent format(MESSAGES["press_option"], human.name, computer.name)
   end
 
-  def display_welcome_message
+  def display_welcome
     indent format(MESSAGES["welcome"])
   end
 
@@ -109,7 +109,7 @@ module TTTGameDisplay
     new_line
   end
 
-  def display_goodbye_message
+  def display_goodbye
     puts MESSAGES["thanks_for_playing"]
   end
 
@@ -117,7 +117,7 @@ module TTTGameDisplay
     system 'clear'
   end
 
-  def display_result
+  def display_end_game_result
     clear_screen_and_display_board
 
     case board.winning_marker
@@ -131,9 +131,38 @@ module TTTGameDisplay
     new_line
   end
 
+  def display_enter_name
+    alt_print MESSAGES["name?"]
+  end
+
+  def display_welcome_name
+    indent format(MESSAGES["hello_name"], name)
+  end
+
   def display_play_again
     puts MESSAGES["play_again"]
     new_line
+  end
+
+  def clear_screen_and_display_board
+    clear
+    display_board
+  end
+
+  def display_invalid
+    puts MESSAGES["invalid"]
+  end
+
+  def display_invalid_marker
+    puts MESSAGES["invalid_marker"]
+  end
+
+  def display_marker_choice
+    indent MESSAGES["marker_choice"]
+  end
+
+  def display_press_enter
+    indent MESSAGES["enter"]
   end
 
   def display_board
@@ -176,10 +205,10 @@ class Human < Player
   include Formatable
 
   def set_name
-    alt_print MESSAGES["name?"]
+    display_enter_name
     @name = gets.chomp
     new_line
-    indent format(MESSAGES["hello_name"], name)
+    display_welcome_name
   end
 
   def moves(board)
@@ -304,13 +333,13 @@ class TTTGame
     clear
     start_screen
     start_game
-    display_goodbye_message
+    display_goodbye
   end
 
   private
 
   def start_screen
-    display_welcome_message
+    display_welcome
     set_participant_names
     display_opponent
     choose_marker
@@ -332,7 +361,7 @@ class TTTGame
   end
 
   def enter_and_begin
-    indent MESSAGES["enter"]
+    display_press_enter
     gets
     clear
   end
@@ -342,7 +371,7 @@ class TTTGame
       alternate_turns
       clear_screen_and_display_board
     end
-    display_result
+    display_end_game_result
   end
 
   def alternate_turns
@@ -351,7 +380,7 @@ class TTTGame
 
   def choose_marker
     loop do
-      indent MESSAGES["marker_choice"]
+      display_marker_choice
       chosen_marker = gets.chomp.upcase
       next unless valid_marker?(chosen_marker)
 
@@ -363,7 +392,7 @@ class TTTGame
 
   def valid_marker?(marker)
     return true if marker == 'X' || marker == 'O'
-    puts MESSAGES["invalid_marker"]
+    display_invalid_marker
     false
   end
 
@@ -386,17 +415,12 @@ class TTTGame
     @turns = (1..9).to_a.map(&:odd?)
   end
 
-  def clear_screen_and_display_board
-    clear
-    display_board
-  end
-
   def play_again?
-    puts MESSAGES["play_again"]
+    display_play_again
     answer = gets.chomp.downcase
     return true if answer == 'y'
     return false if answer == 'n'
-    puts MESSAGES["invalid"]
+    display_invalid
   end
 
   def reset
