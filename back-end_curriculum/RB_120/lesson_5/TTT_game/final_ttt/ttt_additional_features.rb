@@ -1,4 +1,5 @@
 require 'yaml'
+require 'pry'
 
 MESSAGES = YAML.load_file('ttt_prompt.yml')
 
@@ -353,9 +354,13 @@ class Board
   private
 
   def three_in_a_line?(squares)
-    x = squares.collect(&:marker).count('X') == 3
-    o = squares.collect(&:marker).count('O') == 3
+    x = inspect_line(squares, 'X')
+    o = inspect_line(squares, 'O')
     x || o
+  end
+
+  def inspect_line(squares, mark)
+    squares.collect(&:marker).count(mark) == 3
   end
 end
 
