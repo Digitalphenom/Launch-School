@@ -1,5 +1,4 @@
 require 'yaml'
-require 'pry'
 
 MESSAGES = YAML.load_file('ttt_prompt.yml')
 
@@ -78,10 +77,10 @@ module ComputerStrategicMoves
   end
 
   def attack_fifth_square_if_open(board)
-    return board.squares.keys[4] if open_fifth_square?(board)
+    return board.squares.keys[4] if fifth_square_open?(board)
   end
 
-  def open_fifth_square?(brd)
+  def fifth_square_open?(brd)
     brd.squares[5].marker == " "
   end
 
@@ -113,7 +112,7 @@ module TTTGameDisplay
     puts MESSAGES["thanks_for_playing"]
   end
 
-  def clear
+  def clear_screen
     system 'clear'
   end
 
@@ -131,6 +130,45 @@ module TTTGameDisplay
     new_line
   end
 
+  def display_play_again
+    puts MESSAGES["play_again"]
+    new_line
+  end
+
+  def clear_screen_and_display_board
+    clear_screen
+    display_board
+  end
+
+  def display_invalid
+    puts MESSAGES["invalid"]
+  end
+
+  def display_press_enter
+    indent MESSAGES["enter"]
+  end
+
+  def display_board
+    clear_screen
+    indent format(MESSAGES["player_markers"], human.marker, computer.name,
+                  computer.marker)
+    new_line
+    board.draw_board
+    new_line
+  end
+
+  def display_invalid_num
+    indent MESSAGES["invalid_num"]
+  end
+end
+
+module HumanDisplay
+  private
+
+  def display_choose_marker
+    indent MESSAGES["marker_choice"]
+  end
+
   def display_enter_name
     alt_print MESSAGES["name?"]
   end
@@ -139,49 +177,41 @@ module TTTGameDisplay
     indent format(MESSAGES["hello_name"], name)
   end
 
-  def display_play_again
-    puts MESSAGES["play_again"]
-    new_line
-  end
-
-  def clear_screen_and_display_board
-    clear
-    display_board
-  end
-
-  def display_invalid
-    puts MESSAGES["invalid"]
-  end
-
   def display_invalid_marker
     puts MESSAGES["invalid_marker"]
   end
 
-  def display_marker_choice
-    indent MESSAGES["marker_choice"]
+  def display_square_options(board)
+    arrow format(MESSAGES["choose_square"], joinor(board))
   end
 
-  def display_press_enter
-    indent MESSAGES["enter"]
+  def display_invalid_choice
+    puts MESSAGES["invalid_choice"]
   end
 
-  def display_board
-    clear
-    indent format(MESSAGES["player_markers"], human.marker, computer.name,
-                  computer.marker)
-    new_line
-    board.draw_board
-    new_line
+  def display_invalid_name
+    puts MESSAGES["invalid_name"]
   end
 end
 
 class Player
-  attr_accessor :marker
-  attr_reader :name
+  attr_reader :name, :marker
 
   def initialize(marker)
     @marker = marker
   end
+
+  def assign_marker(value)
+    self.marker = value
+  end
+
+  def assign_name(name)
+    self.name = name
+  end
+
+  private
+
+  attr_writer :marker, :name
 end
 
 class Computer < Player
@@ -193,31 +223,60 @@ class Computer < Player
                     "Frodo Baggins"]
 
   def set_name
-    @name = COMPUTER_NAMES.sample
+    assign_name(COMPUTER_NAMES.sample)
   end
 
-  def moves(hmn, cpu, board)
+  def move(hmn, cpu, board)
     board[place_piece(hmn, cpu, board)] = marker
+  end
+
+  def choose_marker(opponent_choice)
+    marker = opponent_choice == "X" ? "O" : "X"
+    assign_marker(marker)
   end
 end
 
 class Human < Player
+  include HumanDisplay
   include Formatable
 
   def set_name
-    display_enter_name
-    @name = gets.chomp
-    new_line
-    display_welcome_name
+    loop do
+      display_enter_name
+      name = gets.chomp
+      next display_invalid_name if invalid_name?(name)
+      assign_name(name)
+      new_line
+      display_welcome_name
+      break
+    end
   end
 
-  def moves(board)
-    arrow format(MESSAGES["choose_square"], joinor(board))
+  def choose_marker
+    loop do
+      display_choose_marker
+      chosen_marker = gets.chomp.upcase
+      next display_invalid_marker unless valid_marker?(chosen_marker)
+      assign_marker(chosen_marker)
+      return marker
+    end
+  end
+
+  def invalid_name?(name)
+    name.empty? || name.match?(/[^\w\s]/) || name.size < 2
+  end
+
+  def valid_marker?(marker)
+    marker == 'X' || marker == 'O'
+  end
+
+  def move(board)
+    display_square_options(board)
     square = nil
     loop do
       square = gets.chomp.to_i
       break if board.unmarked_keys.include?(square)
-      puts MESSAGES["invalid_choice"]
+      display_invalid_choice
     end
     board[square] = marker
   end
@@ -286,14 +345,14 @@ class Board
   def winning_marker
     WINNING_LINES.each do |line|
       squares = @squares.values_at(*line)
-      return squares.first.marker if count_markers(squares)
+      return squares.first.marker if three_in_a_line?(squares)
     end
     nil
   end
 
   private
 
-  def count_markers(squares)
+  def three_in_a_line?(squares)
     x = squares.collect(&:marker).count('X') == 3
     o = squares.collect(&:marker).count('O') == 3
     x || o
@@ -330,7 +389,7 @@ class TTTGame
   end
 
   def play
-    clear
+    clear_screen
     start_screen
     start_game
     display_goodbye
@@ -342,9 +401,9 @@ class TTTGame
     display_welcome
     set_participant_names
     display_opponent
-    choose_marker
+    choose_your_markers
     who_moves_first
-    enter_and_begin
+    enter_to_begin
     display_board
   end
 
@@ -352,18 +411,12 @@ class TTTGame
     loop do
       game_loop
       break unless play_again?
-      clear
+      clear_screen
       who_moves_first
       reset
-      enter_and_begin
+      enter_to_begin
       display_board
     end
-  end
-
-  def enter_and_begin
-    display_press_enter
-    gets
-    clear
   end
 
   def game_loop
@@ -375,34 +428,25 @@ class TTTGame
   end
 
   def alternate_turns
-    turns.shift ? human.moves(board) : computer.moves(human, computer, board)
+    current_turn ? human.move(board) : computer.move(human, computer, board)
   end
 
-  def choose_marker
-    loop do
-      display_marker_choice
-      chosen_marker = gets.chomp.upcase
-      next unless valid_marker?(chosen_marker)
-
-      human.marker = chosen_marker
-      computer.marker = human.marker == "X" ? "O" : "X"
-      break
-    end
+  def current_turn
+    turns.shift
   end
 
-  def valid_marker?(marker)
-    return true if marker == 'X' || marker == 'O'
-    display_invalid_marker
-    false
+  def choose_your_markers
+    human_choice = human.choose_marker
+    computer.choose_marker(human_choice)
   end
 
   def who_moves_first
-    display_who_moves_first
-    choice = gets.chomp
-    if choice == '2'
-      reverse_turns!
-    else
-      @turns
+    loop do
+      display_who_moves_first
+      choice = gets
+      next display_invalid_num unless valid_choice?(choice)
+      return reverse_turns! if choice == '2'
+      break
     end
   end
 
@@ -416,11 +460,23 @@ class TTTGame
   end
 
   def play_again?
-    display_play_again
-    answer = gets.chomp.downcase
-    return true if answer == 'y'
-    return false if answer == 'n'
-    display_invalid
+    loop do
+      display_play_again
+      answer = gets.chomp.downcase
+      return true if answer == 'y'
+      return false if answer == 'n'
+      display_invalid
+    end
+  end
+
+  def enter_to_begin
+    display_press_enter
+    gets
+    clear_screen
+  end
+
+  def valid_choice?(choice)
+    choice.match?(/[1|2]/)
   end
 
   def reset
