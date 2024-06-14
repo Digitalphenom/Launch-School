@@ -67,7 +67,9 @@ module ComputerStrategicMoves
   end
 
   def two_in_a_line?(line, player, brd)
-    markers = brd.squares.values_at(*line).count { |sqr| sqr.marker == player.marker }
+    markers = brd.squares.values_at(*line).count do |sqr|
+      sqr.marker == player.marker
+    end
     empty = brd.squares.values_at(*line).count { |sqr| sqr.marker == " " }
     markers == 2 && empty == 1
   end
