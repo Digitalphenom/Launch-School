@@ -103,10 +103,19 @@ module TTTGameDisplay
     indent format(MESSAGES["welcome"])
   end
 
+  def display_how_many_rounds
+    indent MESSAGES["rounds"]
+  end
+
   def display_opponent
     new_line
     indent format(MESSAGES["opponent_announcement"], computer.name)
     new_line
+  end
+
+  def display_round_and_score
+    indent "Round: #{@round} of #{@total_rounds}"
+    arrow "#{human.name}: #{human.score} #{computer.name}: #{computer.score}"
   end
 
   def display_goodbye
@@ -117,16 +126,16 @@ module TTTGameDisplay
     system 'clear'
   end
 
-  def display_end_game_result
+  def display_round_result
     clear_screen_and_display_board
 
     case board.winning_marker
     when human.marker
-      bannerize(MESSAGES["human_won"], "*")
+      special_output MESSAGES["human_won"]
     when computer.marker
-      bannerize(MESSAGES["computer_won"], "X")
+      special_output MESSAGES["computer_won"]
     else
-      bannerize(MESSAGES["tie"], " ")
+      special_output MESSAGES["tie"]
     end
     new_line
   end
@@ -139,6 +148,18 @@ module TTTGameDisplay
   def clear_screen_and_display_board
     clear_screen
     display_board
+  end
+
+  def display_enter_for_next
+    indent MESSAGES["enter_next"]
+  end
+
+  def display_tie
+    bannerize(MESSAGES["tie_game"], ' ')
+  end
+
+  def display_grand_winner(player)
+    bannerize(format(MESSAGES["game_winner"], player.name), '*')
   end
 
   def display_invalid
@@ -196,10 +217,11 @@ module HumanDisplay
 end
 
 class Player
-  attr_reader :name, :marker
+  attr_reader :name, :marker, :score
 
   def initialize(marker)
     @marker = marker
+    @score = 0
   end
 
   def assign_marker(value)
@@ -210,9 +232,17 @@ class Player
     self.name = name
   end
 
+  def reset_score
+    self.score = 0
+  end
+
+  def add_point
+    self.score += 1
+  end
+
   private
 
-  attr_writer :marker, :name
+  attr_writer :marker, :name, :score
 end
 
 class Computer < Player
@@ -390,54 +420,58 @@ class TTTGame
     @board = Board.new
     @human = Human.new("?")
     @computer = Computer.new("?")
-    @turns = (1..9).to_a.map(&:odd?)
+    @round = 1
   end
 
   def play
-    clear_screen
-    start_screen
-    start_game
+    welcome_screen
+    loop do
+      start_screen
+      start_game
+      break unless play_again?
+      clear_screen
+      reset_all
+    end
     display_goodbye
   end
 
   private
 
-  def start_screen
+  def welcome_screen
+    clear_screen
     display_welcome
-    set_participant_names
+    human.set_name
+  end
+
+  def start_screen
+    set_opponent
     display_opponent
     choose_your_markers
-    who_moves_first
+    ask_for_rounds
+    set_turns
     enter_to_begin
-    display_board
   end
 
   def start_game
+    display_board
     loop do
       game_loop
-      break unless play_again?
-      clear_screen
-      who_moves_first
-      reset
-      enter_to_begin
-      display_board
+      break if @round == @total_rounds
+      enter_for_next_round
+      increment_round
+      reverse_turns
     end
+    game_winner
   end
 
   def game_loop
     until board.someone_won? || board.full?
+      display_round_and_scores
       alternate_turns
+      add_point_to_winner
       clear_screen_and_display_board
     end
-    display_end_game_result
-  end
-
-  def alternate_turns
-    current_turn ? human.move(board) : computer.move(human, computer, board)
-  end
-
-  def current_turn
-    turns.shift
+    display_round_result
   end
 
   def choose_your_markers
@@ -448,24 +482,29 @@ class TTTGame
   def who_moves_first
     loop do
       display_who_moves_first
-      choice = gets
+      choice = gets.chomp
       next display_invalid_num unless valid_choice?(choice)
-      return reverse_turns! if choice == '2'
-      break
+      return choice == '2' ? :even? : :odd?
     end
   end
 
-  def reverse_turns!
-    @turns.shift
-    @turns << false
+  def set_turns
+    @sym = who_moves_first
+    @turns = (1..9).to_a.map(&@sym)
   end
 
-  def reset_turns
-    @turns = (1..9).to_a.map(&:odd?)
+  def reverse_turns
+    @sym = @sym == :odd? ? :even? : :odd?
+    @turns = (1..9).to_a.map(&@sym)
+  end
+
+  def alternate_turns
+    turns.shift ? human.move(board) : computer.move(human, computer, board)
   end
 
   def play_again?
     loop do
+      new_line
       display_play_again
       answer = gets.chomp.downcase
       return true if answer == 'y'
@@ -474,24 +513,71 @@ class TTTGame
     end
   end
 
+  def add_point_to_winner
+    case board.winning_marker
+    when human.marker then human.add_point
+    when computer.marker then computer.add_point
+    end
+  end
+
+  def ask_for_rounds
+    display_how_many_rounds
+    @total_rounds = gets.chomp.to_i
+  end
+
   def enter_to_begin
     display_press_enter
     gets
     clear_screen
   end
 
+  def game_winner
+    return display_tie if computer.score == human.score
+    who_won? ? display_grand_winner(human) : display_grand_winner(computer)
+  end
+
+  def who_won?
+    human.score > computer.score
+  end
+
+  def enter_for_next_round
+    display_enter_for_next
+    gets
+    clear_screen_and_reset_board
+  end
+
+  def clear_screen_and_reset_board
+    clear_screen
+    board.reset
+    display_board
+  end
+
   def valid_choice?(choice)
     choice.match?(/[1|2]/)
   end
 
-  def reset
+  def reset_board_and_turns
     board.reset
-    reset_turns
+  end
+
+  def reset_all
+    board.reset
+    @round = 1
+    computer.reset_score
+    human.reset_score
   end
 
   def set_participant_names
     computer.set_name
     human.set_name
+  end
+
+  def increment_round
+    @round += 1
+  end
+
+  def set_opponent
+    computer.set_name
   end
 
   attr_accessor :turns
