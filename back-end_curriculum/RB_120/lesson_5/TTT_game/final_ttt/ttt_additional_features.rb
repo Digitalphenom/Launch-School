@@ -1,5 +1,4 @@
 require 'yaml'
-require 'pry'
 
 MESSAGES = YAML.load_file('ttt_prompt.yml')
 
@@ -68,9 +67,9 @@ module ComputerStrategicMoves
   end
 
   def two_in_a_line?(line, player, brd)
-    brd.squares.values_at(*line).count do |sqr|
-      sqr.marker == player.marker
-    end == 2
+    markers = brd.squares.values_at(*line).count { |sqr| sqr.marker == player.marker }
+    empty = brd.squares.values_at(*line).count { |sqr| sqr.marker == " " }
+    markers == 2 && empty == 1
   end
 
   def first_open_square(line, brd)
@@ -113,7 +112,7 @@ module TTTGameDisplay
     new_line
   end
 
-  def display_round_and_score
+  def display_round_and_scores
     indent "Round: #{@round} of #{@total_rounds}"
     arrow "#{human.name}: #{human.score} #{computer.name}: #{computer.score}"
   end
@@ -268,8 +267,7 @@ class Computer < Player
 end
 
 class Human < Player
-  include HumanDisplay
-  include Formatable
+  include HumanDisplay, Formatable
 
   def set_name
     loop do
@@ -413,8 +411,7 @@ class Square
 end
 
 class TTTGame
-  include Formatable
-  include TTTGameDisplay
+  include Formatable, TTTGameDisplay
 
   def initialize
     @board = Board.new
@@ -474,6 +471,15 @@ class TTTGame
     display_round_result
   end
 
+  def set_participant_names
+    computer.set_name
+    human.set_name
+  end
+
+  def set_opponent
+    computer.set_name
+  end
+
   def choose_your_markers
     human_choice = human.choose_marker
     computer.choose_marker(human_choice)
@@ -502,17 +508,6 @@ class TTTGame
     turns.shift ? human.move(board) : computer.move(human, computer, board)
   end
 
-  def play_again?
-    loop do
-      new_line
-      display_play_again
-      answer = gets.chomp.downcase
-      return true if answer == 'y'
-      return false if answer == 'n'
-      display_invalid
-    end
-  end
-
   def add_point_to_winner
     case board.winning_marker
     when human.marker then human.add_point
@@ -525,10 +520,8 @@ class TTTGame
     @total_rounds = gets.chomp.to_i
   end
 
-  def enter_to_begin
-    display_press_enter
-    gets
-    clear_screen
+  def increment_round
+    @round += 1
   end
 
   def game_winner
@@ -540,24 +533,33 @@ class TTTGame
     human.score > computer.score
   end
 
-  def enter_for_next_round
-    display_enter_for_next
-    gets
-    clear_screen_and_reset_board
-  end
-
-  def clear_screen_and_reset_board
-    clear_screen
-    board.reset
-    display_board
+  def play_again?
+    loop do
+      new_line
+      display_play_again
+      answer = gets.chomp.downcase
+      return true if answer == 'y'
+      return false if answer == 'n'
+      display_invalid
+    end
   end
 
   def valid_choice?(choice)
     choice.match?(/[1|2]/)
   end
 
-  def reset_board_and_turns
+  def enter_for_next_round
+    display_enter_for_next
+    gets
+    clear_screen
     board.reset
+    display_board
+  end
+
+  def enter_to_begin
+    display_press_enter
+    gets
+    clear_screen
   end
 
   def reset_all
@@ -565,19 +567,6 @@ class TTTGame
     @round = 1
     computer.reset_score
     human.reset_score
-  end
-
-  def set_participant_names
-    computer.set_name
-    human.set_name
-  end
-
-  def increment_round
-    @round += 1
-  end
-
-  def set_opponent
-    computer.set_name
   end
 
   attr_accessor :turns

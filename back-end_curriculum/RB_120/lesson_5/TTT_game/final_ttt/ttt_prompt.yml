@@ -1,4 +1,4 @@
-who_first: "Who goes first %s or %s?"
+who_first: "Who goes first %s or %s?\n  Turns will alternate after each round"
 welcome: "Hello, welcome to Tic Tac Toe!"
 name?: "Enter your name: "
 hello_name: "Hey %s lets get started!"
