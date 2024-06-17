@@ -41,6 +41,8 @@ module Formatable
 end
 
 module ComputerStrategicMoves
+  CENTER_SQUARE = 5
+
   def place_piece(human, computer, board)
     find_strategic_square(board, [computer, human]) ||
       attack_fifth_square_if_open(board) ||
@@ -79,11 +81,11 @@ module ComputerStrategicMoves
   end
 
   def attack_fifth_square_if_open(board)
-    return board.squares.keys[4] if fifth_square_open?(board)
+    return board.squares.keys[CENTER_SQUARE - 1] if fifth_square_open?(board)
   end
 
   def fifth_square_open?(brd)
-    brd.squares[5].marker == " "
+    brd.squares[CENTER_SQUARE].marker == " "
   end
 
   def random_square(board)
@@ -134,7 +136,7 @@ module TTTGameDisplay
     when human.marker
       special_output MESSAGES["human_won"]
     when computer.marker
-      special_output MESSAGES["computer_won"]
+      special_output format(MESSAGES["computer_won"], computer.name)
     else
       special_output MESSAGES["tie"]
     end
@@ -176,7 +178,7 @@ module TTTGameDisplay
     indent format(MESSAGES["player_markers"], human.marker, computer.name,
                   computer.marker)
     new_line
-    board.draw_board
+    board.draw
     new_line
   end
 
@@ -250,7 +252,7 @@ class Computer < Player
   include ComputerStrategicMoves
 
   COMPUTER_NAMES = ["Chris Lee",
-                    "Tony Robinson",
+                    "Tony Robbins",
                     "Lex Fridman",
                     "Frodo Baggins"]
 
@@ -294,7 +296,8 @@ class Human < Player
   end
 
   def invalid_name?(name)
-    name.empty? || name.match?(/[^\w\s]/) || name.size < 2
+    white_chars = name.count(" ")
+    white_chars > 1 || name.empty? || name.match?(/\W\d/) || name.size < 2
   end
 
   def valid_marker?(marker)
@@ -336,7 +339,7 @@ class Board
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
-  def draw_board
+  def draw
     puts '           |       |'
     puts "        #{@squares[1]}  |   #{@squares[2]}   |  #{@squares[3]}"
     puts '           |       |'
@@ -518,8 +521,20 @@ class TTTGame
   end
 
   def ask_for_rounds
-    display_how_many_rounds
-    @total_rounds = gets.chomp.to_i
+    loop do
+      display_how_many_rounds
+      rounds = gets.chomp
+      return @total_rounds = rounds.to_i if valid_rounds?(rounds)
+      indent MESSAGES["enter_valid_round"]
+    end
+  end
+
+  def valid_rounds?(rounds)
+    rounds.match?(/[0-9]/) && valid_round_count?(rounds.to_i)
+  end
+
+  def valid_round_count?(rounds)
+    rounds < 11 && rounds > 1
   end
 
   def increment_round
