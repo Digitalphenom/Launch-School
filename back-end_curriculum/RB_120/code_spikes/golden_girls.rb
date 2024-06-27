@@ -192,3 +192,117 @@ search_blanche = SearchDataBase.new('blanche deveraux')
   puts name.retrieve_user_profile
   puts name.retrieve_user_description
 end
+
+=begin
+class Inhabitants
+  attr_reader :nationality, :relationship_status, :work_status, :age, :first, :last, :address, :unique_detail
+
+  def initialize(name)
+    @first, @last = convert_to_upcase(name)
+    @nationality = 'American'
+    @relationship_status = 'Widowed'
+    @work_status = 'Working'
+    @age = 'Over 50'
+    @address = '6151 Richmond Street Miami, FL'.split.join(' ')
+  end
+  
+  def convert_to_upcase(name)
+    name.split.map { |word| word.capitalize }
+  end
+
+  private
+  attr_writer :nationality, :work_status
+end
+
+# The more public methods we make avilable the more likely an unintended change can occur to the state of an object. One example of that is defining attr_accessor methods for every instance variable we create. When we do that we may be unnecesarilly exposing state by making writer methods avilable outside of the class where an unintended change can occur. 
+
+# For this reason, we want to be deliberate and intentional about the methods we make available outside of the class, especially those concerning mutation.
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+class GilmoreGirls
+  def initialize(name)
+    super(name)
+  end
+
+end
+
+class Dorothy < GilmoreGirls
+  def initialize(name)
+    super
+    self.relationship_status = 'Ex-husband Stan Zbornak'
+    @unique_detail = 'Fun Fact: She '
+  end
+end
+
+class Blanche < GilmoreGirls
+  def initialize(name)
+    super
+    @unique_detail = 'Fun Fact: She dates younger men'
+  end
+end
+
+class Rose < GilmoreGirls
+  def initialize(name)
+    super
+    @unique_detail = 'Fun Fact: She has a long-term boyfriend'
+  end
+end
+
+class Sofia < GilmoreGirls
+  def initialize(name)
+    super
+    self.nationality = 'Italian'
+    self.work_status = 'Not working'
+  end
+end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+class SearchDataBase
+  attr_reader :user_profile, :user_location
+
+  def initialize name
+    @user_profile = validate_name(name)
+  end
+
+  def validate_name(name)
+    first_name = name.first
+    return name if ['dorothy', 'blanche', 'rose', 'sofia'].include?(first_name.downcase)
+    raise ArgumentError, 'You entered an unknow name please try again.'
+  end
+
+  def retrieve_user_name
+    puts "First Name: #{user_profile.first}"
+    puts "Last Name: #{user_profile.last}"
+    puts
+  end
+
+  def retrieve_user_profile
+    puts "First Name: #{user_profile.first}"
+    puts "Last Name: #{user_profile.last}"
+    puts "Nationality: #{user_profile.nationality}"
+    puts "Age: #{user_profile.age}"
+    puts "Relationship Status: #{user_profile.relationship_status}"
+    puts "Work Status: #{user_profile.work_status}"
+    puts "Address #{user_profile.address}"
+  end
+
+  def retrieve_user_description
+    puts '----------------------------'
+    puts "#{user_profile.first} is a #{user_profile.relationship_status} #{user_profile.nationality} female\nover the age of #{user_profile.age} and #{user_profile.work_status}.\n#{user_profile.unique_detail}"
+    puts '----------------------------'
+  end
+end
+
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+dorothy = Dorothy.new('dorothy zbornak')
+rose = Rose.new('rose nylund')
+sofia = Sofia.new('sofia petrillo')
+blanche = Blanche.new('blanche deveraux')
+
+[dorothy, rose, sofia, blanche].each do |name|
+  search_by_name = SearchDataBase.new(name)
+  puts search_by_name.retrieve_user_profile
+  puts search_by_name.retrieve_user_description
+end
