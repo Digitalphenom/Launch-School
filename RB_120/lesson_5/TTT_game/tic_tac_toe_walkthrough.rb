@@ -222,7 +222,7 @@ class TTTGame
     loop do
       puts 'Would you like to play again? (y/n)'
       answer = gets.chomp.downcase
-      break if %w[y n].include?(answer)
+      break if %w(y n).include?(answer)
 
       puts 'Sorry, must be y or n'
     end
