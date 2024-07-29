@@ -148,6 +148,10 @@ class TodoList
   def all_done
     select { |todo| todo.done?}
   end
+
+  def all_not_done
+    select { |todo| !todo.done? }
+  end
 end
 
 todo1 = Todo.new("Buy milk")
@@ -161,13 +165,14 @@ list.add(todo1)
 list.add(todo2)
 list.add(todo3)
 puts
-todo1.done!
-todo2.done!
-todo3.done!
+#todo1.done!
+#todo2.done!
+#todo3.done!
 
 puts
 #results = list.select { |todo| todo.done? }    # you need to implement this method
 puts
 p list.all_done
 puts
+p list.all_not_done
 #puts results.inspect
