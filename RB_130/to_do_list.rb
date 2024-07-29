@@ -144,6 +144,10 @@ class TodoList
     each { |todo| return todo if title == todo.title }
     nil
   end
+
+  def all_done
+    select { |todo| todo.done?}
+  end
 end
 
 todo1 = Todo.new("Buy milk")
@@ -156,11 +160,14 @@ list = TodoList.new("Today's Todo List")
 list.add(todo1)
 list.add(todo2)
 list.add(todo3)
-
+puts
 todo1.done!
+todo2.done!
+todo3.done!
 
-results = list.select { |todo| todo.done? }    # you need to implement this method
 puts
-p list.find_by_title("Buy milk")
+#results = list.select { |todo| todo.done? }    # you need to implement this method
 puts
-puts results.inspect
+p list.all_done
+puts
+#puts results.inspect
