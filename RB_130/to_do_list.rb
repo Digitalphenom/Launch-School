@@ -152,6 +152,21 @@ class TodoList
   def all_not_done
     select { |todo| !todo.done? }
   end
+
+  def mark_done(string)
+    each do |todo|
+      return todo.done! if !todo.done? && todo.title == string 
+    end
+  end
+
+  def mark_all_done
+    done! unless done?
+  end
+
+  def mark_all_undone
+    each { |todo| todo.undone! }
+  end
+
 end
 
 todo1 = Todo.new("Buy milk")
@@ -165,14 +180,16 @@ list.add(todo1)
 list.add(todo2)
 list.add(todo3)
 puts
-#todo1.done!
-#todo2.done!
-#todo3.done!
 
+todo1.done!
+todo2.done!
+todo3.done!
+list.mark_all_undone
 puts
+ list.each {|todo| puts todo}
 #results = list.select { |todo| todo.done? }    # you need to implement this method
 puts
-p list.all_done
+#p list.all_done
 puts
-p list.all_not_done
+#p list.all_not_done
 #puts results.inspect
