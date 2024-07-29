@@ -38,6 +38,8 @@ class Todo
   end
 end
 
+#‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
 class TodoList 
   attr_accessor :title
   attr_reader :todo_list
@@ -137,6 +139,11 @@ class TodoList
     end
     obj
   end
+
+  def find_by_title(title)
+    each { |todo| return todo if title == todo.title }
+    nil
+  end
 end
 
 todo1 = Todo.new("Buy milk")
@@ -153,5 +160,7 @@ list.add(todo3)
 todo1.done!
 
 results = list.select { |todo| todo.done? }    # you need to implement this method
-
+puts
+p list.find_by_title("Buy milk")
+puts
 puts results.inspect
