@@ -16,6 +16,7 @@ class Todo
 
   def done!
     self.done = true
+    puts " - #{title} is done!"
   end
 
   def done?
@@ -39,6 +40,7 @@ end
 
 class TodoList 
   attr_accessor :title
+  attr_reader :todo_list
 
   def initialize(title)
     @title = title
@@ -123,7 +125,17 @@ class TodoList
       counter += 1
       break if counter == @todo_list.size
     end
-    @todo_list
+    self
+  end
+
+  def select
+    obj = TodoList.new(title)
+
+    each do |ele|
+      return_value = yield(ele)
+      obj.add(ele) if return_value
+    end
+    obj
   end
 end
 
@@ -137,7 +149,9 @@ list = TodoList.new("Today's Todo List")
 list.add(todo1)
 list.add(todo2)
 list.add(todo3)
-puts
-list.each do |todo|
-  puts todo                   # calls Todo#to_s
-end
+
+todo1.done!
+
+results = list.select { |todo| todo.done? }    # you need to implement this method
+
+puts results.inspect
