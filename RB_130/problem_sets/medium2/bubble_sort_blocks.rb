@@ -20,8 +20,6 @@ def bubble_sort!(array)
   p array
 end
 
-# Trouble synthesizing how to perform swap. Exercise states that we should specify an alternative way to swap values in the form of providing a block. However, the block in the examples only returns true or false. But I dont know what to do with that because true in one block could be (first <= second) whereas in another true could represent (first >= second). This means I cant specify a specific action that should occur as a result of true because the meaning of true can change based on how the `user` applies the logic. So the question is what criteria do we use to swap values and what exactly does it mean to swap values do we just change the order? ie default behavior is that we swap the right with left if left is greater than right. are we merely reversing that or are we reversing the order in which we swap say beginning from the end of the array and comparing two objects that way or swapping right <=> left with => left <=> right????
-# Im having troulbe breaking the problem down into minature bites and its raising cognitive load.
 
 # Default behavior of bubble sort
 #If the first of the two elements is greater than the second, then the two elements are swapped.
