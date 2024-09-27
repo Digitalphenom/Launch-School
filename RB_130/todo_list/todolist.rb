@@ -15,8 +15,8 @@ class Todo
   end
 
   def done!
-    self.done = true
     puts " - #{title} is done!"
+    self.done = true
   end
 
   def done?
@@ -42,14 +42,14 @@ end
 
 class TodoList 
   attr_accessor :title
-  attr_reader :todo_list
+  attr_reader :list
 
   def initialize(title)
     @title = title
     @list = []
   end
 
-  def add(todo)
+  def <<(todo)
     unless todo.is_a?(Todo)
       raise TypeError, "Can Only add Todo objects!"
     else
@@ -58,14 +58,16 @@ class TodoList
     end
   end
 
+  alias :add :<<
+
   def to_s
     if @list.empty?
-      puts "Your list is empty"
+      "Your list is empty"
     else
-    "---- #{title} ----"
-    @list.each { |todo| puts todo }
+      todo_title = "---- #{title} ----\n"
+      todos = @list.map { |todo| todo.to_s }.join("\n")
+      todo_title + todos
     end
-    ""
   end
 
   def size
@@ -106,13 +108,13 @@ class TodoList
   end
 
   def mark_done_at(position)
-    item_at(position).done!
     "Item at position #{position + 1} is marked done."
+    item_at(position).done!
   end
 
   def mark_undone_at(position)
-    item_at(position).undone!
     "Item at position #{position + 1} marked undone."
+    item_at(position).undone!
   end
 
   def remove_at(position)
@@ -120,6 +122,7 @@ class TodoList
   end
 
   def each
+    return self if self.list.empty?
     counter = 0
 
     loop do 
@@ -167,6 +170,10 @@ class TodoList
     each { |todo| todo.undone! }
   end
 
+  def ==(other)
+    other.is_a?(TodoList) && self.size == other.size
+  end
+
 end
 
 todo1 = Todo.new("Buy milk")
@@ -181,15 +188,11 @@ list.add(todo2)
 list.add(todo3)
 puts
 
-todo1.done!
-todo2.done!
-todo3.done!
-list.mark_all_undone
-puts
- list.each {|todo| puts todo}
+
+list.mark_done_at(1)
+puts list
+#p list.item_at(-1)
 #results = list.select { |todo| todo.done? }    # you need to implement this method
-puts
 #p list.all_done
-puts
 #p list.all_not_done
 #puts results.inspect

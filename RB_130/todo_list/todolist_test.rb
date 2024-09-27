@@ -1,3 +1,5 @@
+require 'simplecov'
+SimpleCov.start
 require 'minitest/autorun'
 require "minitest/reporters"
 Minitest::Reporters.use!
@@ -29,7 +31,7 @@ class TodoListTest < Minitest::Test
   def test_first
     assert_equal(@todos.first, @list.first)
   end
-  
+
   def test_last
     assert_equal(@todos.last, @list.last)
   end
@@ -84,9 +86,7 @@ class TodoListTest < Minitest::Test
   end
 
   def test_mark_undone_at
-    assert_raises(IndexError) do 
-      @list.mark_undone_at(@list.size + 1)
-    end
+    assert_raises(IndexError) { @list.mark_undone_at(@list.size + 1) }
 
     @list.done!
 
@@ -94,6 +94,15 @@ class TodoListTest < Minitest::Test
     assert_equal(false, @todo3.done?)
     assert_equal(true, @todo2.done?)
     assert_equal(true, @todo1.done?)
+  end
+
+  def test_mark_all_undone
+    @list.done!
+    @list.mark_all_undone
+
+    assert_equal(false, @todo1.done?)
+    assert_equal(false, @todo2.done?)
+    assert_equal(false, @todo3.done?)
   end
 
   def test_done_bang
@@ -158,12 +167,14 @@ class TodoListTest < Minitest::Test
   end
 
   def test_select
-    @list2.add(@todo1)
-    @list2.add(@todo2)
-    @list2.add(@todo3)
+    list2 = TodoList.new("Title")
+
+    list2.add(@todo1)
+    list2.add(@todo2)
+    list2.add(@todo3)
 
     select1_return_value = @list.select { |todo| todo.title == "Clean room" }
-    select2_return_value = @list2.select { |todo| todo.title == "Clean room" }
+    select2_return_value = list2.select { |todo| todo.title == "Clean room" }
     
     assert_equal(select1_return_value, select2_return_value )
   end

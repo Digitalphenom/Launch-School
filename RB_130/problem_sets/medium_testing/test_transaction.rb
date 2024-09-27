@@ -12,7 +12,6 @@ class TransactionTest < Minitest::Test
   def test_prompt_for_payment
     @transaction.prompt_for_payment(input: @input)
     paid = @transaction.amount_paid
-
     @input.rewind
     assert_equal(@input.gets.to_f, paid)
   end

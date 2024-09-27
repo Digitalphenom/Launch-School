@@ -10,13 +10,16 @@ class Transaction
   end
 
   def prompt_for_payment(input: $stdin)
+    $stdout = File.open('transaction_streams.txt', 'w')
+
     loop do
-      puts "You owe $#{item_cost}.\nHow much are you paying?"
-      @amount_paid = input.gets.chomp.to_f
-      break if valid_payment? && sufficient_payment?
-      puts 'That is not the correct amount. ' \
-           'Please make sure to pay the full cost.'
+        puts "You owe $#{item_cost}.\nHow much are you paying?"
+        @amount_paid = input.gets.chomp.to_f
+        break if valid_payment? && sufficient_payment?
+        puts 'That is not the correct amount. ' \
+            'Please make sure to pay the full cost.'
     end
+    $stdout.close
   end
 
   private
@@ -29,3 +32,7 @@ class Transaction
     amount_paid >= item_cost
   end
 end
+
+tr = Transaction.new(25)
+
+tr.prompt_for_payment
