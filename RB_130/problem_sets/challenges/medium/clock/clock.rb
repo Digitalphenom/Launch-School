@@ -54,29 +54,29 @@ output: string with time format 00:00
 
 #◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
-  ▣ Create a class called Clock
-  ▣ create a class method `at` 
-    □ instantiates a clock object
-    □ pass coresponding value
-    □ returns a clock object
-
-  ▣ convert input values to minutes since midnight
-    □ multiply hour by minutes
-    □ add minutes
-    □ get quotiend & remainder
-     23 + 30 + 60
-     23 * 60 = 1380
-     1380 + (30 + 60 ) = 1470
-     [q24, r30]
-  ▣ determine time loop
-    □ if hour is greater than 23 return to 0
-
-  ▣ define to_s method
-    □ invoking to_s should return clock format
-      □ if hour is greater than 9 return num as is otherwise insert 0
-      □ if minute is greater than 9 repeat above otherwise repeat above
-  ▣ create + method
-    invoking - should subtract the specified time
+  ▣ create a class method named at
+    □ accept an hour and time value
+    □ method should return a `clock` instance
+  ▣ create a to_s method
+    □ should return a time formated string
+      ﹥ if hour is greater than 9 return hour otherwise add 0
+      ﹥ if minutes is greater than 9 return minute otherwise add 0
+    □ concatenate hour & minutes => 04:24
+  ▣ a constructor method
+    □ get total hour and time in minutes store in total iv
+    □ retrieve total hours & minutes
+  ▣ create a method that retrieves hour & minutes from total min time
+    □ use modulo to (cycle around) minutes in a 24 hour day (1440)
+      ﹥ 300 % 1440 => 300
+      ﹥ 1440 % 1440 => 0
+      ﹥ 1740 % 1440 => 300
+    □ return the quotient and remainder from 60
+  ▣ create a #- method
+    □ method should retrieve current total and subtract time
+    □ retrieve hour and minutes
+    □ instantiate new clock object with new values
+  ▣ A #+ method should repeat these steps but instead perform addition
+  ▣ Create #== method that compares hour and minutes by value
 =end
 
 class Clock
