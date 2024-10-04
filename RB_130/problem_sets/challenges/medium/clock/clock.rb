@@ -80,11 +80,11 @@ output: string with time format 00:00
 =end
 
 class Clock
-  attr_reader :hour, :minutes
+  attr_reader :hour, :minute
 
-  def initialize(h, m)
-    @total = (h * 60) + m
-    @hour, @minutes = retrieve_hour_and_minutes(@total)
+  def initialize(hours, minutes)
+    @total = total_minutes(hours, minutes)
+    @hour, @minute = retrieve_hour_and_minutes(@total)
   end
 
   def self.at(hour = 0, minute = 0)
@@ -92,9 +92,7 @@ class Clock
   end
 
   def to_s
-    h = hour > 9 ? "#{hour}" : "0#{hour}"
-    m = minutes > 9 ? "#{minutes}" : "0#{minutes}"
-    "#{h}:#{m}"
+    format('%02d:%02d', hour, minute)
   end
 
   def +(time)
@@ -108,7 +106,7 @@ class Clock
   end
 
   def ==(other)
-    hour == other.hour && minutes == other.minutes
+    hour == other.hour && minute == other.minute
   end
 
   private
@@ -117,7 +115,7 @@ class Clock
     (total % 1440).divmod(60)
   end
 
+  def total_minutes(h, m)
+    (h * 60) + m
+  end
 end
-
-
-
