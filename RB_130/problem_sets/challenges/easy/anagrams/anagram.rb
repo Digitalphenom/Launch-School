@@ -1,7 +1,25 @@
+class Anagram
+  attr_reader :input_word
 
+  def initialize(word)
+    @input_word = word.downcase
+  end
+
+  def match(arr)
+    arr.select do |list_word|
+      next if input_word == list_word.downcase
+      sort_word(input_word) == sort_word(list_word.downcase)
+    end
+  end
+
+  private
+
+  def sort_word(word)
+    word.chars.sort.join
+  end
+end
 
 =begin
-
 #⋄≂≂▫≂≂▫≂≂▫≂▫≂▫≂≂▫≂≂▫≂⋄—◟ 𝓟roblem ◞—⋄≂▫≂≂▫≂≂▫≂≂▫≂▫≂≂▫≂≂▫≂≂≂⋄
   Write a method that takes a list of words and returns a new array composed of anagrams.
 
@@ -46,24 +64,3 @@
     
   ▣ Return array 
 =end
-
-class Anagram
-  attr_reader :input_word
-
-  def initialize(word)
-    @input_word = word.downcase
-  end
-
-  def match(arr)
-    arr.select do |list_word|
-      next if input_word == list_word.downcase
-      sort_word(input_word) == sort_word(list_word.downcase)
-    end
-  end
-
-  private
-
-  def sort_word(word)
-    word.chars.sort.join
-  end
-end
