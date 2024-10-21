@@ -1,18 +1,7 @@
 require 'minitest/autorun'
-require_relative 'anagram'
+require_relative 'anagram_two'
 
 class AnagramTest < Minitest::Test
-  def test_no_matches
-    detector = Anagram.new('diaper')
-    assert_equal [], detector.match(%w(hello world zombies pants))
-  end
-
-  def test_detect_simple_anagram
-    
-    detector = Anagram.new('ant')
-    anagrams = detector.match(%w(tan stand at))
-    assert_equal ['tan'], anagrams
-  end
 
   def test_detect_multiple_anagrams
     

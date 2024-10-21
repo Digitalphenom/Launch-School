@@ -1,5 +1,5 @@
-
 require 'date'
+
 class Meetup
   attr_reader :year, :month
 
@@ -16,22 +16,24 @@ class Meetup
     @month = month
   end
 
-  def day(week_day, d_number)
+  def day(week_day, schedule)
     week_day = week_day.downcase
-    d_number = d_number.downcase
+    schedule = d_number.downcase
     date = Date.civil(year, month)
 
-    day = if d_number == 'last'
+    day = if schedule == 'last'
             find_last_day(week_day, date)
-          elsif d_number == 'teenth'
+          elsif schedule == 'teenth'
             find_teenth_day(week_day)
           else
-            find_day(week_day, d_number, date)
+            find_day(week_day, schedule, date)
           end
 
     return nil if day.nil?
     Date.civil(year, month, day)
   end
+
+  private
 
   def find_day(day, desired_week, date)
     current_day = 0
@@ -80,7 +82,6 @@ class Meetup
     end
   end
 end
-
 
 =begin
 

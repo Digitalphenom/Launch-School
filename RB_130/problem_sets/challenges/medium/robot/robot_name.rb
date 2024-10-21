@@ -67,7 +67,6 @@ Have the option to reset name to blank.
         
 =end
 
-
 class Robot
   @@existing_names = []
   FACTORY = ""
@@ -111,13 +110,3 @@ class Robot
     end
   end
 end
-
-#one = Robot.new
-#two = Robot.new
-
- # this code should ensure that a seperate instance does not have a the name of another instance name
- # since were testing for different robots (instances) we check that robots or not the same and that two instances share the same name
- # we need to ensure both that the current robot does not generate a duplicate name once his settings are reset and a new name is generated
- # and that other robots do not have the same name
- # its easier to test for the latter, that's all the test cases are asking for so ill implement that
- #require 'pry'; binding.pry

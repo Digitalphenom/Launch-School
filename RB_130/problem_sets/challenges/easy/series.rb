@@ -59,6 +59,7 @@ class Series
     
     (0..input_str.size - slice).each.with_object([]) do |idx, result|
       result << input_str[idx, slice].map(&:to_i)
+      require 'pry'; binding.pry
       #slice += 1
       #break result if slice > input_str.size 
     end

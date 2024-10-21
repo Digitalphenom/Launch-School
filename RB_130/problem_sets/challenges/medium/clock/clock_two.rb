@@ -60,7 +60,7 @@ output: time string format "08:00"
       ﹥since were returning instances instantiate a clock instanced and track through iv
   ▣ create to_s
     ﹥ should return a string rep of clock object
-  ▣ + method 
+  ▣ + method
     ﹥ should add to existing time
       □ input time always comes in as minutes
         ﹥ convert minutes into hour/minutes
@@ -78,16 +78,17 @@ output: time string format "08:00"
         25 hours 24 + 60 minutes
       create a method names reset_time
         □ should reset time to 1440
-          ﹥ if total time is greater than 1440
+          if total time is greater than 1440
             ie 1440 + 60 = 1510
-            get the difference 1510 - 1440 
+            get the difference 1510 - 1440
             70.divmod(60) [1h, 10min]
-            
 
 =end
 
 class Clock
   attr_reader :hour, :minute, :total
+
+  MINUTES_IN_DAY = 24 * 60
 
   def initialize(hour, minute)
     @hour = hour
@@ -97,7 +98,7 @@ class Clock
   end
 
   def self.at(hour, minute = 0)
-    hour = 24 if hour.zero? 
+    hour = 24 if hour.zero?
     Clock.new(hour, minute)
   end
 
@@ -108,13 +109,13 @@ class Clock
   def -(time)
     new_time = total - time
 
-    new_time = reset_time(new_time) if new_time < 0
+    new_time = add_time(new_time) if new_time < 0
     Clock.new(*new_time.divmod(60))
   end
 
   def +(time)
     new_time = total + time
-    new_time = reset_time(new_time) if new_time > 1440
+    new_time = subtract_time(new_time) if new_time > MINUTES_IN_DAY
     Clock.new(*new_time.divmod(60))
   end
 
@@ -122,16 +123,18 @@ class Clock
     hour == other.hour && minute == other.minute
   end
 
-  def subtract_time(total_time)
+  private
+
+  def add_time(total_time)
     until total_time >= 0
-      total_time = 1440 - total_time.abs
+      total_time = MINUTES_IN_DAY - total_time.abs
     end
     total_time
   end
 
-  def reset_time(total_time)
-    until total_time <= 1440
-      total_time = total_time - 1440
+  def subtract_time(total_time)
+    until total_time <= MINUTES_IN_DAY
+      total_time -= MINUTES_IN_DAY
     end
     total_time
   end
@@ -142,8 +145,4 @@ end
 # 1440 - 1021 = 419
 # 419 / 60 = 6 = 6hours, 59minutes
 
-#6hours, 59minutes = 419totalmin
-#24 - 6
-#1440 - 419
-
-
+# 6hours, 59minutes = 419totalmin

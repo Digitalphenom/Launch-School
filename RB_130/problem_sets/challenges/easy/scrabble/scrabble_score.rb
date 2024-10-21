@@ -86,7 +86,6 @@ class Scrabble
       5 => %w(K),
       8 => %w(J X),
       10 => %w(Q Z)
-      "hello"
     }
   end
 
@@ -99,8 +98,11 @@ class Scrabble
     
     input_word.upcase.chars.map do |char|
       Scrabble.point_system.each do |point, sub_arr|
-        break point if sub_arr.include?(char)
+        if sub_arr.include?(char)
+          break point 
+        else
         0
+        end
       end
     end.sum
   end

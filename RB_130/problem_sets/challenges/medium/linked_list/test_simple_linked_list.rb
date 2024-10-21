@@ -1,6 +1,6 @@
 require 'minitest/autorun'
 
-require_relative 'simple_linked_list'
+require_relative 'simple_linked_list_two'
 
 class LinkedListTest < Minitest::Test
   def test_element_datum
@@ -21,14 +21,15 @@ class LinkedListTest < Minitest::Test
   end
 
   def test_element_next_initialization
-    
+
     element1 = Element.new(1)
     element2 = Element.new(2, element1)
     assert_equal element1, element2.next
   end
+##◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
   def test_empty_list_size
-
+    
     list = SimpleLinkedList.new
     assert_equal 0, list.size
   end
@@ -47,7 +48,7 @@ class LinkedListTest < Minitest::Test
   end
 
   def test_empty_list_1_element
-    
+
     list = SimpleLinkedList.new
     list.push(1)
     refute list.empty?
@@ -114,31 +115,28 @@ class LinkedListTest < Minitest::Test
     assert_equal 4, list.size
     assert_equal 4, list.peek
   end
-
+##◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+#
   def test_from_a_empty_array
-    
     list = SimpleLinkedList.from_a([])
     assert_equal 0, list.size
     assert_nil list.peek
   end
 
   def test_from_a_nil
-    
     list = SimpleLinkedList.from_a(nil)
     assert_equal 0, list.size
     assert_nil list.peek
   end
 
   def test_from_a_2_element_array
-    
     list = SimpleLinkedList.from_a([1, 2])
     assert_equal 2, list.size
     assert_equal 1, list.peek
-    #assert_equal 2, list.head.next.datum
+    assert_equal 2, list.head.next.datum
   end
 
   def test_from_a_10_items
-    
     list = SimpleLinkedList.from_a((1..10).to_a)
     assert_equal 10, list.size
     assert_equal 1, list.peek
@@ -169,9 +167,11 @@ class LinkedListTest < Minitest::Test
   end
 
   def test_reverse_2_element_list
+    
     list = SimpleLinkedList.from_a([1, 2])
     # list_r and list need not be the same object
     list_r = list.reverse
+
     assert_equal 2, list_r.peek
     assert_equal 1, list_r.head.next.datum
     assert list_r.head.next.tail?
