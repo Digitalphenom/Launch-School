@@ -67,12 +67,3 @@ class Anagram
     word.chars.sort.join
   end
 end
-
-=begin
-# ok there are 3 glaring assumptions I made and led this to implementing a partial solution
-
-# The first is I assumed that `dector` was a method when infact its what they named an instance of Anagram.
-# Well actually that's the main mistake that led to other mistakes such as that detector should return a string and compare each string with a match method that would be chained on to detector but since match is also an instance method of `string` we must ensure detector returns an instance. This then led to not understanding why `self` wasnt referring to the object that the calling object returns and is amking me doubt whether my understanding is correct.
-
-So to clariy, detectr is an instance of Anagram and `#match` is the sole method we should define.
-=end
