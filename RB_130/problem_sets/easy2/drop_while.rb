@@ -1,5 +1,5 @@
-def drop_while(collection)
-  collection.each_with_object([]).with_index do |(element, result), i|
+def drop_while(arr)
+  arr.each_with_object([]).with_index do |(element, result), i|
     return collection[i..-1] unless yield(element)
   end
 end

@@ -61,6 +61,9 @@ class SumOfMultiples
   end
 end
 
+def sum_of_values(lismit, range)
+
+
 #◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 #class SumOfMul
 #
