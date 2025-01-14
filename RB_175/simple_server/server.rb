@@ -17,7 +17,6 @@ end
 
 loop do 
   client = server.accept
-
   #client.puts "HTTP/1.1 200 OK\r\n\r\n"
   #client.puts "Content-Type: text/plain\r\n\r\n"
 
@@ -40,20 +39,27 @@ loop do
   client.puts "</pre>"
   
   client.puts "<div>"
-  client.puts "<h1> ROlls!</h1>"
+  client.puts "<h1>Counter</h1>"
 
-  rolls = param_hsh["rolls"].to_i
-  sides = param_hsh["sides"].to_i
+  number = param_hsh["number"].to_i
+  client.puts "<p>The current number is #{number}.</p>"
 
-  rolls.times do |i|
-    roll = rand(sides) + 1
-    client.puts "<p>", roll, "</p>"
-  end
   client.puts "</div>"
 
-  client.puts "</html>"
+  client.puts "<a href='?number=#{number + 1}'>Add one</a>"
+  client.puts "<a href='?number=#{number - 1}'>Subtract one</a>"
+
   client.puts "</body>"
+  client.puts "</html>"
   
-  client.puts
   client.close
 end
+
+
+#rolls = param_hsh["rolls"].to_i
+#sides = param_hsh["sides"].to_i
+#
+#rolls.times do |i|
+#  roll = rand(sides) + 1
+#  client.puts "<p>", roll, "</p>"
+#end
