@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .button {
+        color: rgb(0, 0, 0);
+        padding: 8px 16px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+      }
+      
+     
+    </style>
+    <title>Coding Challenge</title>
+  </head>
+  <body>
+  <div>
+    <h1>Practicing Sinatra</h1>
+      <p>Some practice code</p>
+      <div>
+
+      <ol>
+      <% @links.each do |link| %>
+        <li><%= link %></li>
+      <% end %>
+      </ol>
+    </div>
+      <div>
+        <button class="button button1" type="button" onclick="location.href='/'"=>
+          Sort Ascending</button>
+          <button class="button button1" type="button" onclick="location.href='/?sort=desc'">
+          Sort Descending</button>
+      </div>
+    </div>
+  </body>
+</html>
