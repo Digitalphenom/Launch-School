@@ -2,6 +2,15 @@ require "sinatra"
 require "sinatra/reloader"
 require "tilt/erb"
 
+helpers do
+
+  def add_tag(text)
+    text.split("\n\n").map do |paragraph|
+      "<p>#{paragraph}</p>"
+    end.join
+  end
+end
+
 before do
   @toc_contents = File.read("data/toc.txt")
 end
