@@ -21,14 +21,23 @@ get "/" do
   erb :home
 end
 
+not_found do
+  redirect to("/")
+end
+
 get "/chapters/:number" do 
   number = params[:number].to_i
-
   chapter_name = @toc_contents.split(/\n/)[number - 1]
+  redirect "/unknown" if number > 15 || number.zero?
+
   @title = "Chapter #{number}: #{chapter_name}"
 
   @toc_contents = File.read('data/toc.txt')
   @chapter = File.read("data/chp#{number}.txt")
 
   erb :chapter
+end
+
+get "/unknown" do
+  "unknow chapter entered"
 end
