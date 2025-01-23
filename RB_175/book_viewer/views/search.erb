@@ -6,15 +6,21 @@
 </form>
 
 <% if @params["query"] %>
-  <% if display_result.nil? %>
+  <% if render_result.nil? %>
     <p>Sorry, no matches were found.</p>
   <% else %>
-  <h3>Results for '<%= @search_term %>'</h3>
-  <ul>
-<%  render_result do |chapter, num| %>
-      <li><a href="/chapters/<%= num %>"><%= chapter %></li>
+  <h2>Results for '<%= @search_term %>'</h2>
+
+  <% render_result do |chapter, num, paragraphs| %>
+      <h4><%= chapter %></h4>
+    <ul>
+      <% paragraphs.each do |paragraph| %>
+      <li>
+        <a href="/chapters/<%= num %>" id="page"><%= paragraph %></a>
+      </li>
+      <% end%>
+    </ul>
     <% end %>
-  </ul>
   <% end %>
 <% end %>
 

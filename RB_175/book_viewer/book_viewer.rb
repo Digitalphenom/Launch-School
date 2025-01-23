@@ -20,16 +20,24 @@ helpers do
 
     result.map do |chapter, number, content|
       next if @search_term.empty?
+      chapter = chapter.join
 
-      [chapter.join, number] if content.include?(@search_term)
+      [chapter, number, content] if content.include?(@search_term)
     end.compact
   end
 
   def render_result
-    return nil if hsh_map.empty?
-
-    chapters.each do |chapter, number|
-      yield(chapter, number) if block_given?
+    return nil if chapters.empty?
+    
+    chapters.each do |chapter, number, content|
+      paragraphs = retrieve_paragraph(content)
+      yield(chapter, number, paragraphs) if block_given?
+    end
+  end
+  
+  def retrieve_paragraph(content)
+    content.split("\n\n").select do |paragraph|
+      paragraph if paragraph.include? @search_term
     end
   end
 end
