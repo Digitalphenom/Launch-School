@@ -9,6 +9,29 @@ helpers do
       "<p>#{paragraph}</p>"
     end.join
   end
+
+  def chapters
+    result = []
+    toc = @toc_contents.split("\n")
+
+    toc.size.times do |i|
+      result << [[toc[i]], i += 1, File.read("data/chp#{i}.txt")]
+    end
+
+    result.map do |chapter, number, content|
+      next if @search_term.empty?
+
+      [chapter.join, number] if content.include?(@search_term)
+    end.compact
+  end
+
+  def render_result
+    return nil if hsh_map.empty?
+
+    chapters.each do |chapter, number|
+      yield(chapter, number) if block_given?
+    end
+  end
 end
 
 before do
@@ -19,10 +42,6 @@ get "/" do
   @title = "The Adventures of Sherlock Holmes"
 
   erb :home
-end
-
-not_found do
-  redirect to("/")
 end
 
 get "/chapters/:number" do 
@@ -40,4 +59,9 @@ end
 
 get "/unknown" do
   "unknow chapter entered"
+end
+
+get "/search" do 
+  @search_term = params["query"]
+  erb :search
 end
