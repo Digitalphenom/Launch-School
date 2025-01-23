@@ -16,7 +16,7 @@
     <ul>
       <% paragraphs.each do |paragraph| %>
       <li>
-        <a href="/chapters/<%= num %>" id="page"><%= paragraph %></a>
+        <a href="/chapters/<%= num %>" id="page"><%= highlight_term(paragraph, params["query"]) %></a>
       </li>
       <% end%>
     </ul>

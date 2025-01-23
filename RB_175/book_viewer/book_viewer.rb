@@ -40,7 +40,12 @@ helpers do
       paragraph if paragraph.include? @search_term
     end
   end
+
+  def highlight_term(paragraph, term)
+    paragraph.gsub(term, %(<strong>#{term}</strong>))
+  end
 end
+
 
 before do
   @toc_contents = File.read("data/toc.txt")
