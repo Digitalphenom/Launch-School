@@ -11,7 +11,7 @@ get "/" do
     arr << " <a href=/docs/#{d}>#{d}</a>"
   end
   @links.reverse! if params[:sort] == "desc"
-  erb :template
+  erb :index
 end
 
 get "/docs/chp1.txt" do
