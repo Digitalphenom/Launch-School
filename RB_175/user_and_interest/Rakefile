@@ -1,20 +1,31 @@
 require 'yaml'
 require_relative 'extract_data'
 
-desc 'add_handlers'
-task :add do
+desc 'add_user'
+task :add_user do
+  Rake::Task[:add_handler].execute
+  Rake::Task[:make_template].execute
+end
+
+desc 'create handler'
+task :add_handler do
+  puts "\nExtracting name and creating Sinatra handler.."
   recent_user = extract_data.first.last
-  file_name = recent_user.split('-').map(&:downcase).join
+  @user_name = recent_user.split('-').map(&:downcase).join
   file = File.new('user_interest_app.rb', 'a+')
-  
-  File.open("views/users.erb", 'w+') do |user_layout|
-    erb_file = File.new("views/users/#{file_name}.erb", 'w+')
-    erb_file.write(user_layout.read) 
-  end
   file.puts(
     "\nget \"/#{recent_user}\" do\n"\
-    "\terb :#{file_name}\n"\
+    "\terb :'/users/#{@user_name}'\n"\
     "end\n"
   )
   file.close
+end
+
+desc 'user template'
+task :make_template do
+  puts "Writing user template\n"
+  File.open('views/user_template.erb', 'r') do |user_layout|
+    erb_file = File.new("views/users/#{@user_name}.erb", 'w+')
+    erb_file.write(user_layout.read)
+  end
 end
