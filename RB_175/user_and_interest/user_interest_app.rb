@@ -1,35 +1,58 @@
 require 'sinatra'
-require 'sinatra/reloader'
 require 'tilt/erb'
-require_relative 'extract_name'
+require_relative 'extract_data'
 require 'yaml'
 
-def retrieve_name_from(url)
-  url_array = url.split("/").join(" ").split
-  if url_array.length == 3
-    url_array.last.split("-").map { |name| name.capitalize}
-  else
-    ["Welcome To User Interest's"]
+configure :development do
+  require 'sinatra/reloader'
+  also_reload './**/*.rb' # Watches all .rb files for changes
+end
+
+helpers do
+  def user_interest_count
+    @user_content.reduce(0) { |acc, ele| acc + ele.size }
   end
 end
 
+def check_url
+  url_array = url.split('/').join(' ').split
+
+  if url_array.include?('home') || url_array.length < 3
+    ''
+  else
+    current_userdata(url_array)
+  end
+end
+
+def current_userdata(url_array)
+  @first, @last = url_array.last.split('-')
+  @user_email = @yaml[@first.downcase.to_sym][:email]
+  @user_interest = @yaml[@first.downcase.to_sym][:interests]
+end
+
 before do
-  @first, @last = retrieve_name_from(url)
-  @user_names = extract_name("ji")
+  @user_names, @user_emails, @user_content = extract_data
+  check_url
 end
 
-get '/' do 
-  erb :user
+get '/' do
+  redirect to('/home')
 end
 
-get '/jamy-rustenburg' do 
+get '/home' do
+  erb :home
+end
+
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+get '/Hiroko-Ohara' do
+  erb :hirokoohara
+end
+
+get '/Jamy-Rustenburg' do
   erb :jamyrustenburgug
 end
 
-get '/nora-alnes' do 
+get '/Nora-Alnes' do
   erb :noraalnes
-end
-
-get '/hiroko-ohara' do 
-  erb :hirokoohara
 end
