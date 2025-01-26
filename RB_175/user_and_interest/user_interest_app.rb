@@ -2,6 +2,7 @@ require 'sinatra'
 require 'tilt/erb'
 require_relative 'extract_data'
 require 'yaml'
+require 'pry'
 
 configure :development do
   require 'sinatra/reloader'
@@ -27,7 +28,7 @@ end
 def current_userdata(url_array)
   @first, @last = url_array.last.split('-')
   @user_email = @yaml[@first.downcase.to_sym][:email]
-  @user_interest = @yaml[@first.downcase.to_sym][:interests]
+  @user_interests = @yaml[@first.downcase.to_sym][:interests]
 end
 
 before do
@@ -45,14 +46,19 @@ end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
-get '/Hiroko-Ohara' do
-  erb :hirokoohara
+
+get "/Jamy-Rustenburg" do
+	erb :'/users/jamyrustenburg'
 end
 
-get '/Jamy-Rustenburg' do
-  erb :jamyrustenburgug
+get "/Derek-Awesomekid" do
+	erb :'/users/derekawesomekid'
 end
 
-get '/Nora-Alnes' do
-  erb :noraalnes
+get "/Nora-Alnes" do
+	erb :'/users/noraalnes'
+end
+
+get "/Hiroko-Ohara" do
+	erb :'/users/hirokoohara'
 end

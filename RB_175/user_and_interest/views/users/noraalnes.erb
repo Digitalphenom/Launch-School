@@ -1,0 +1,26 @@
+<div id="main">
+  <div class="header">
+    <h1><%= "#{@first} #{@last}" %></h1>
+    <p> <%= @user_email %> </p>
+  </div>
+    <div class="content">
+    <h2>My Interest's</h2>
+    <% @user_interests.each do |type| %>
+    <ul>
+      <li>
+        <%= type.capitalize %>
+      </li>
+    </ul>
+    <% end %>
+    </div>
+</div>
+<div id="mid">
+  <div class="header">
+    <h2>There are <%= "#{@user_names.count}" %> users with a total   of <%= "#{user_interest_count}" %> interests.</h2>
+  <% @user_names.each do |name| %>
+  <% next if name == ("#{@first}-#{@last}") %>
+    <link href="/"#{@name}"">
+    <a href="/<%= "#{name}" %>"class="pure-menu-link"><%= "#{name}" %></a>
+  <% end %>
+  </div>
+</div>
