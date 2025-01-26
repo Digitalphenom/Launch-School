@@ -46,19 +46,22 @@ end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
-
-get "/Jamy-Rustenburg" do
-	erb :'/users/jamyrustenburg'
+get '/Jamy-Rustenburg' do
+  erb :'/users/jamyrustenburg'
 end
 
-get "/Derek-Awesomekid" do
-	erb :'/users/derekawesomekid'
+get '/Derek-Awesomekid' do
+  erb :'/users/derekawesomekid'
 end
 
-get "/Nora-Alnes" do
-	erb :'/users/noraalnes'
+get '/Nora-Alnes' do
+  erb :'/users/noraalnes'
 end
 
-get "/Hiroko-Ohara" do
-	erb :'/users/hirokoohara'
+get '/Hiroko-Ohara' do
+  erb :'/users/hirokoohara'
+end
+
+get '/Juliana-Smokes' do
+  erb :'/users/julianasmokes'
 end

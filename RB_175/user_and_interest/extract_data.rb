@@ -4,14 +4,14 @@ require 'yaml'
 
 EMAILS = %w[hotmail yahoo google gmail].freeze
 
-def extract_data
+def load_file
   @yaml = YAML.load_file('users.yaml')
+  @yaml = [] if @yaml.nil?
+end
 
-  [
-    find_data(:name),
-    find_data(:email),
-    find_data(:interests)
-  ]
+def extract_data
+  load_file
+  %i[name email interests].map { |type| find_data(type) }
 end
 
 def find_names_from_email
