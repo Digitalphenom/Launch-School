@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
-gem "sinatra"
-gem "sinatra-contrib"
-gem "tilt"
-gem "erubis"
-gem "webrick"
-gem "rackup"
-gem "pry"
+gem 'erubis'
+gem 'pry'
+gem 'rackup'
+gem 'sinatra'
+gem 'sinatra-contrib'
+gem 'tilt'
+gem 'webrick'
 
-ruby "3.2.2"
+ruby '3.2.2'

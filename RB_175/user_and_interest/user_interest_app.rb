@@ -50,9 +50,6 @@ get '/Jamy-Rustenburg' do
   erb :'/users/jamyrustenburg'
 end
 
-get '/Derek-Awesomekid' do
-  erb :'/users/derekawesomekid'
-end
 
 get '/Nora-Alnes' do
   erb :'/users/noraalnes'
