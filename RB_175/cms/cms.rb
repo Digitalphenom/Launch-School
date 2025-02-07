@@ -3,7 +3,11 @@ require 'sinatra/reloader' if development?
 require 'sinatra/content_for'
 require 'erubi'
 require 'erubi/capture_block'
+require 'minitest/autorun'
 
+#configure do
+  set :root, File.dirname(__FILE__)
+#end
 
 get '/' do
   root = File.expand_path('..', __FILE__)
@@ -14,9 +18,7 @@ get '/' do
 end
 
 get '/:filename' do
-  headers 'Content-Type' => 'text/html'
-
+  headers 'Content-Type' => 'text/plain'
   doc = params[:filename]
-  
   File.readlines("files/#{doc}")
 end
