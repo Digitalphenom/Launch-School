@@ -1,4 +1,4 @@
-ENV["RACK_ENV"] = "test"
+#ENV["RACK_ENV"] = "test"
 
 #Dir.chdir("..") unless Dir.pwd.end_with?("cms")
 

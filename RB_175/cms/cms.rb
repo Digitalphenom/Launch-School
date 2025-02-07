@@ -3,11 +3,22 @@ require 'sinatra/reloader' if development?
 require 'sinatra/content_for'
 require 'erubi'
 require 'erubi/capture_block'
-require 'minitest/autorun'
+#require 'minitest/autorun'
 
-#configure do
-  set :root, File.dirname(__FILE__)
-#end
+
+enable :sessions
+set :session_secret, SecureRandom.hex(32)
+
+
+helpers do
+  def check_if_valid_document
+    if session[:document]
+      "#{session[:document]} does not exist"
+    else
+      ""
+    end
+  end
+end
 
 get '/' do
   root = File.expand_path('..', __FILE__)
@@ -20,5 +31,14 @@ end
 get '/:filename' do
   headers 'Content-Type' => 'text/plain'
   doc = params[:filename]
-  File.readlines("files/#{doc}")
+  begin
+    File.readlines("files/#{doc}")
+  rescue StandardError
+    session[:document] = params[:filename]
+    redirect '/'
+  end
 end
+
+
+
+
