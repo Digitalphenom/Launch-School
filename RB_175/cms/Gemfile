@@ -19,3 +19,7 @@ gem "pry", "~> 0.15.2"
 gem "rack-test", "~> 2.2"
 
 gem "minitest", "~> 5.25"
+
+gem "redcarpet", "~> 3.6"
+
+gem "pry-byebug", "~> 3.8"
