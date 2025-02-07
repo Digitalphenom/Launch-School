@@ -5,18 +5,12 @@ require 'erubi'
 require 'erubi/capture_block'
 #require 'minitest/autorun'
 
-
 enable :sessions
 set :session_secret, SecureRandom.hex(32)
 
-
 helpers do
-  def check_if_valid_document
-    if session[:document]
-      "#{session[:document]} does not exist"
-    else
-      ""
-    end
+  def error_or_blank
+    session[:error] ? session[:error] : ""
   end
 end
 
@@ -34,7 +28,7 @@ get '/:filename' do
   begin
     File.readlines("files/#{doc}")
   rescue StandardError
-    session[:document] = params[:filename]
+    session[:error] = "#{params[:filename]} does not exist"
     redirect '/'
   end
 end

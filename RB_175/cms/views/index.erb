@@ -1,5 +1,5 @@
-<p><%= check_if_valid_document %></p>
-<% session[:document] = nil %>
+<p><%= error_or_blank %></p>
+<% session[:error] = nil %>
 <% @files.each do |file| %>
   <ul>
     <li><a href="/<%= file %>" ><%= file %></a></li>

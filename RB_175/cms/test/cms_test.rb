@@ -1,4 +1,4 @@
-#ENV["RACK_ENV"] = "test"
+ENV["RACK_ENV"] = "test"
 
 #Dir.chdir("..") unless Dir.pwd.end_with?("cms")
 
@@ -9,9 +9,6 @@ require 'rack/test'
 
 class CMSTest < Minitest::Test
   include Rack::Test::Methods
-
-  def setup
-  end
 
   def app
     Sinatra::Application
@@ -50,4 +47,20 @@ class CMSTest < Minitest::Test
     contents = File.readlines('files/changes.txt')
     assert_equal contents.join, last_response.body
   end
+  
+  def test_dynamic_filename
+    get "/notafile.ext"
+    assert_equal 302, last_response.status
+    assert_raises StandardError do 
+      File.readlines("files/#{doc}")
+    end
+
+    get last_response['Location']
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, 'notafile.ext does not exist'
+    
+    get '/'
+    refute_includes last_response.body, 'notafile.ext does not exist'
+  end
+
 end
