@@ -6,7 +6,7 @@ gem 'erubi'
 gem 'sinatra'
 gem 'sinatra-contrib'
 
-ruby '3.2.2'
+ruby '3.2.0'
 
 group :production do
   gem 'puma'
@@ -23,3 +23,4 @@ gem "minitest", "~> 5.25"
 gem "redcarpet", "~> 3.6"
 
 gem "pry-byebug", "~> 3.8"
+gem "minitest-reporters"

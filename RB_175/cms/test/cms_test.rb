@@ -1,17 +1,20 @@
 ENV['RACK_ENV'] = 'test'
-
-# Dir.chdir("..") unless Dir.pwd.end_with?("cms")
-
-require_relative '../cms'
-
 require 'minitest/autorun'
+require 'minitest/reporters'
 require 'rack/test'
+
+Minitest::Reporters.use!
+require_relative '../cms'
 
 class CMSTest < Minitest::Test
   include Rack::Test::Methods
 
   def app
     Sinatra::Application
+  end
+
+  def setup
+    @path = File.expand_path('..', __FILE__)
   end
 
   def test_index
@@ -61,5 +64,26 @@ class CMSTest < Minitest::Test
 
     File.readlines('files/about.md')
     assert_includes last_response.body, '<h1>Ruby is</h1>'
+  end
+  
+  def test_edit
+    get '/about.md/edit'
+    assert_equal 200, last_response.status
+    assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
+    
+    get '/'
+    refute_includes last_response.body, 'has been updated'
+  end
+  
+  def test_updating_content
+    post "/changes.txt"
+    assert_equal 302, last_response.status
+
+    get last_response["Location"]
+
+    get "/changes.txt"
+    assert_equal 200, last_response.status
+
+    assert_includes last_response.body, File.read("#{@path}/changes.txt")
   end
 end

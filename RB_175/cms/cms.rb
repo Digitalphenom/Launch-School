@@ -11,18 +11,22 @@ configure do
   set :session_secret, SecureRandom.hex(32)
 end
 
+def data_path
+  if ENV["RACK_ENV"] == "test"
+    File.expand_path("../test", __FILE__)
+  else
+    File.expand_path("../files", __FILE__)
+  end
+end
+
 helpers do
   def error_or_blank
     session[:error] || ''
   end
-end
 
-get '/' do
-  root = File.expand_path(__dir__)
-  @files = Dir.glob(root + '/files/*').map do |path|
-    File.basename(path)
+  def saved_changes
+    session[:message] || ''
   end
-  erb :index
 end
 
 def render_md(contents)
@@ -43,6 +47,14 @@ def load_file_content(contents, doc)
   end
 end
 
+get '/' do
+  root = File.expand_path(__dir__)
+  @files = Dir.glob(root + '/files/*').map do |path|
+    File.basename(path)
+  end
+  erb :index
+end
+
 get '/:filename' do
   doc = params[:filename]
   begin
@@ -52,4 +64,22 @@ get '/:filename' do
     session[:error] = "#{params[:filename]} does not exist"
     redirect '/'
   end
+end
+
+get '/:filename/edit' do 
+  doc = params[:filename]
+  @contents = File.readlines("files/#{doc}")
+  
+  @file_name = params[:filename]
+  erb :edit
+end
+
+post '/:filename' do
+  file_name = params[:filename]
+  File.open("files/#{file_name}", 'w') do |file|
+    file.write params[:user_input]
+  end
+
+  session[:message] = "#{params[:filename]} has been updated."
+  redirect '/'
 end
