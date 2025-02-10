@@ -1,14 +1,12 @@
-<p><%= error_or_blank %></p>
-<p><%= saved_changes %></p>
-<% session[:error] = nil %>
-<% session[:message] = nil %>
+<% if session[:message] %>
+<%= session.delete(:message) %>
+<% end %>
+
 <ul>
   <% @files.each do |file| %>
-    <form action="/<%= file %>/edit" method="get">
       <li>
         <a href="/<%= file %>"><%= file %></a>
-        <input type="submit" value="edit"></input>
+        <a href="/<%= file %>/edit">edit</a>
       </li>
-    </form>
   <% end %>
 </ul>

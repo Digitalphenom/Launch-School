@@ -1,10 +1,7 @@
 require 'sinatra'
-require 'sinatra/reloader' if development?
-require 'sinatra/content_for'
+require 'sinatra/reloader'
 require 'erubi'
-require 'erubi/capture_block'
 require 'redcarpet'
-# require 'minitest/autorun'
 
 configure do
   enable :sessions
@@ -12,73 +9,61 @@ configure do
 end
 
 def data_path
-  if ENV["RACK_ENV"] == "test"
-    File.expand_path("../test", __FILE__)
+  if ENV['RACK_ENV'] == 'test'
+    File.expand_path('test/data', __dir__)
   else
-    File.expand_path("../files", __FILE__)
+    File.expand_path('data', __dir__)
   end
 end
 
-helpers do
-  def error_or_blank
-    session[:error] || ''
-  end
-
-  def saved_changes
-    session[:message] || ''
-  end
-end
-
-def render_md(contents)
+def render_markdown(text)
   markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
-  contents.map { |line| markdown.render(line) }
+  markdown.render(text)
 end
 
-def load_file_content(contents, doc)
-  file_type = doc.split('.').last
-
-  case file_type
-  when 'md'
-    headers['Content-Type'] = 'text/html'
-    render_md(contents)
-  when 'txt'
+def load_file_content(path)
+  content = File.read(path)
+  case File.extname(path)
+  when '.txt'
     headers['Content-Type'] = 'text/plain'
-    contents
+    content
+  when '.md'
+    render_markdown(content)
   end
 end
 
 get '/' do
-  root = File.expand_path(__dir__)
-  @files = Dir.glob(root + '/files/*').map do |path|
+  pattern = File.join(data_path, '*')
+  @files = Dir.glob(pattern).map do |path|
     File.basename(path)
   end
   erb :index
 end
 
 get '/:filename' do
-  doc = params[:filename]
-  begin
-    contents = File.readlines("files/#{doc}")
-    load_file_content(contents, doc)
-  rescue Errno::ENOENT
-    session[:error] = "#{params[:filename]} does not exist"
+  file_path = File.join(data_path, params[:filename])
+
+  if File.exist?(file_path)
+    load_file_content(file_path)
+  else
+    session[:message] = "#{params[:filename]} does not exist."
     redirect '/'
   end
 end
 
-get '/:filename/edit' do 
-  doc = params[:filename]
-  @contents = File.readlines("files/#{doc}")
-  
-  @file_name = params[:filename]
+get '/:filename/edit' do
+  file_path = File.join(data_path, params[:filename])
+
+  @filename = params[:filename]
+  @content = File.read(file_path)
+
   erb :edit
 end
 
 post '/:filename' do
-  file_name = params[:filename]
-  File.open("files/#{file_name}", 'w') do |file|
-    file.write params[:user_input]
-  end
+  file_path = File.join(data_path, params[:filename])
+
+  File.write(file_path, params[:content])
 
   session[:message] = "#{params[:filename]} has been updated."
   redirect '/'
