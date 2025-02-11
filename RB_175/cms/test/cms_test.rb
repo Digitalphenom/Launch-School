@@ -114,4 +114,18 @@ class CMSTest < Minitest::Test
     assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
     assert_includes last_response.body, 'Enter a valid extension'
   end
+
+  def test_delete_document
+    create_document 'document.txt'
+
+    post '/document.txt/delete'
+
+    assert_equal 302, last_response.status
+
+    follow_redirect!
+    assert_includes last_response.body, 'document.txt has been deleted'
+
+    get '/'
+    refute_includes last_response.body, 'test.txt'
+  end
 end

@@ -7,3 +7,8 @@ body {
   height: 50px;
   background-color: rgb(162, 228, 20);
 }
+
+
+form.inline {
+  display: inline;
+}
