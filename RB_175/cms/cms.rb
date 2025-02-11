@@ -40,6 +40,10 @@ get '/' do
   erb :index
 end
 
+get '/new' do
+  erb :new
+end
+
 get '/:filename' do
   file_path = File.join(data_path, params[:filename])
 
@@ -58,6 +62,31 @@ get '/:filename/edit' do
   @content = File.read(file_path)
 
   erb :edit
+end
+
+def valid_extension?(ext)
+  %w[.txt .md].include?(ext)
+end
+
+post '/create' do
+  ext = File.extname(params[:document])
+
+  unless params[:document].empty?
+    if valid_extension?(ext)
+      file_path = File.join(data_path, params[:document])
+      File.write(file_path, '')
+      session[:message] = "#{params[:document]} has been created."
+      redirect '/'
+    else
+      session[:message] = 'Enter a valid extension (txt or md)'
+      status 422
+      erb :new
+    end
+  else
+    session[:message] = 'A name is required'
+    status 422
+    erb :new
+  end
 end
 
 post '/:filename' do

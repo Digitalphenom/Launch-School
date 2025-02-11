@@ -79,4 +79,39 @@ class CMSTest < Minitest::Test
     assert_equal 200, last_response.status
     assert_includes last_response.body, 'new content'
   end
+
+  def test_new
+    get '/new'
+
+    assert_equal 200, last_response.status
+    assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
+    assert_includes last_response.body, '<input'
+    assert_includes last_response.body, 'Add a new document'
+  end
+  
+  def test_create_document
+    post '/create', document: 'test.txt'
+    assert_equal 302, last_response.status
+
+    follow_redirect!
+
+    assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
+    assert_includes last_response.body, 'test.txt has been created'
+  end
+
+  def test_create_empty_document
+    post '/create', document: ''
+    assert_equal 422, last_response.status
+
+    assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
+    assert_includes last_response.body, 'A name is required'
+  end
+
+  def test_valid_extension
+    post '/create', document: 'invalid'
+    assert_equal 422, last_response.status
+
+    assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
+    assert_includes last_response.body, 'Enter a valid extension'
+  end
 end
