@@ -71,19 +71,17 @@ end
 post '/create' do
   ext = File.extname(params[:document])
 
-  unless params[:document].empty?
-    if valid_extension?(ext)
-      file_path = File.join(data_path, params[:document])
-      File.write(file_path, '')
-      session[:message] = "#{params[:document]} has been created."
-      redirect '/'
-    else
-      session[:message] = 'Enter a valid extension (txt or md)'
-      status 422
-      erb :new
-    end
-  else
+  if params[:document].empty?
     session[:message] = 'A name is required'
+    status 422
+    erb :new
+  elsif valid_extension?(ext)
+    file_path = File.join(data_path, params[:document])
+    File.write(file_path, '')
+    session[:message] = "#{params[:document]} has been created."
+    redirect '/'
+  else
+    session[:message] = 'Enter a valid extension (txt or md)'
     status 422
     erb :new
   end
