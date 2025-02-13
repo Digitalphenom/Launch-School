@@ -12,6 +12,10 @@ def valid_extension?(ext)
   %w[.txt .md].include?(ext)
 end
 
+def session
+  last_request.env['rack.session']
+end
+
 def data_path
   if ENV['RACK_ENV'] == 'test'
     File.expand_path('test/data', __dir__)
@@ -82,7 +86,7 @@ end
 post '/users/login' do
   if valid_user?(params[:username], params[:password])
     session[:user_state] = true
-    session[:message] = "Welcome!"
+    session[:message] = 'Welcome!'
     session[:username] = params[:username]
     redirect '/'
   else
@@ -94,7 +98,7 @@ end
 
 post '/users/logout' do
   session[:user_state] = false
-  session[:message] = 'You have been signed out'
+  session[:message] = 'You have been loged out.'
   redirect '/'
 end
 
