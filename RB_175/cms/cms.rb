@@ -8,6 +8,10 @@ configure do
   set :session_secret, SecureRandom.hex(32)
 end
 
+def valid_extension?(ext)
+  %w[.txt .md].include?(ext)
+end
+
 def data_path
   if ENV['RACK_ENV'] == 'test'
     File.expand_path('test/data', __dir__)
@@ -33,6 +37,7 @@ def load_file_content(path)
 end
 
 get '/' do
+  session[:user_state] = false unless session[:user_state]
   pattern = File.join(data_path, '*')
   @files = Dir.glob(pattern).map do |path|
     File.basename(path)
@@ -42,6 +47,10 @@ end
 
 get '/new' do
   erb :new
+end
+
+get '/users/login' do
+  erb :signin
 end
 
 get '/:filename' do
@@ -64,8 +73,29 @@ get '/:filename/edit' do
   erb :edit
 end
 
-def valid_extension?(ext)
-  %w[.txt .md].include?(ext)
+def valid_user?(username, password)
+  username == 'Admin' && password == 'secret'
+end
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+post '/users/login' do
+  if valid_user?(params[:username], params[:password])
+    session[:user_state] = true
+    session[:message] = "Welcome!"
+    session[:username] = params[:username]
+    redirect '/'
+  else
+    session[:message] = 'Invalid credentials'
+    status 422
+    erb :signin
+  end
+end
+
+post '/users/logout' do
+  session[:user_state] = false
+  session[:message] = 'You have been signed out'
+  redirect '/'
 end
 
 post '/create' do

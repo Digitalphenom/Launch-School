@@ -10,5 +10,15 @@
   <% end %>
 </ul>
 
-
 <p><a href="/new">Create Document</a></p>
+
+<% if session[:user_state] %>
+    <form action="users/logout" method="POST">
+      <p class="user-status">
+        Signed in as <%= session[:username] %>
+        <button type="submit">Sign out</button>
+      </p>
+    </form>
+<% else %>
+      <p class="user-status"><a href="users/login">Sign In</a></p>
+<% end %>
