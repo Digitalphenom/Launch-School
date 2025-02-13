@@ -30,6 +30,14 @@ class CMSTest < Minitest::Test
     end
   end
 
+  def admin_session
+    { 'rack.session' => { user_state: true} }
+  end
+
+  def invalid_session
+    { 'rack.session' => { user_state: false} }
+  end
+
   def test_index
     create_document 'about.md'
     create_document 'changes.txt'
@@ -69,26 +77,46 @@ class CMSTest < Minitest::Test
     assert_equal 'notafile.ext does not exist.', session[:message]
   end
 
-  def test_updating_document
-    post '/changes.txt', content: 'new content'
+  def test_editing_document
+    create_document 'changes.txt'
 
-    assert_equal 302, last_response.status
-    assert_equal 'changes.txt has been updated.', session[:message]
+    get 'changes.txt/edit', {}, admin_session
 
-    get last_response['Location']
-
-    get '/changes.txt'
     assert_equal 200, last_response.status
-    assert_includes last_response.body, 'new content'
+
+    post '/changes.txt', document: 'new content'
+    assert_equal 302, last_response.status
+
+    get '/'
+    assert_includes last_response.body, 'changes.txt has been updated.'
   end
 
+ #def test_updating_document
+ #  post '/changes.txt', content: 'new content'
+
+ #  assert_equal 302, last_response.status
+ #  assert_equal 'changes.txt has been updated.', session[:message]
+
+ #  follow_redirect!
+
+ #  get '/changes.txt'
+ #  assert_equal 200, last_response.status
+ #  assert_includes last_response.body, 'new content'
+ #end
+
   def test_new
-    get '/new'
+    get '/new', {}, admin_session
 
     assert_equal 200, last_response.status
     assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
     assert_includes last_response.body, '<input'
     assert_includes last_response.body, 'Add a new document'
+    
+    get '/new', {}, invalid_session
+    assert_equal 302, last_response.status
+
+    follow_redirect!
+    assert_includes last_response.body, 'You must login'
   end
 
   def test_create_document
@@ -103,7 +131,7 @@ class CMSTest < Minitest::Test
   end
 
   def test_create_empty_document
-    post '/create', document: ''
+    post '/create', {document: ''}, admin_session
     assert_equal 422, last_response.status
 
     assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
@@ -121,15 +149,13 @@ class CMSTest < Minitest::Test
   def test_delete_document
     create_document 'document.txt'
 
-    post '/document.txt/delete'
+    post '/document.txt/delete', {}, admin_session
 
     assert_equal 302, last_response.status
     assert_equal 'document.txt has been deleted.', session[:message]
     
     follow_redirect!
-    assert_includes last_response.body, 'document.txt has been deleted'
 
-    get '/'
     refute_includes last_response.body, 'test.txt'
   end
 

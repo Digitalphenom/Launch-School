@@ -40,6 +40,23 @@ def load_file_content(path)
   end
 end
 
+def logged_in?
+  session[:user_state]
+end
+
+def logged_out_msg
+  session[:message] = 'You must login'
+end
+
+def check_login
+  return if logged_in?
+
+  logged_out_msg
+  redirect '/'
+end
+
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
 get '/' do
   session[:user_state] = false unless session[:user_state]
   pattern = File.join(data_path, '*')
@@ -50,6 +67,7 @@ get '/' do
 end
 
 get '/new' do
+  check_login
   erb :new
 end
 
@@ -81,7 +99,7 @@ def valid_user?(username, password)
   username == 'Admin' && password == 'secret'
 end
 
-#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 post '/users/login' do
   if valid_user?(params[:username], params[:password])
@@ -122,18 +140,19 @@ post '/create' do
 end
 
 post '/:filename' do
+  check_login
+
   file_path = File.join(data_path, params[:filename])
-
   File.write(file_path, params[:content])
-
   session[:message] = "#{params[:filename]} has been updated."
   redirect '/'
 end
 
 post '/:filename/delete' do
+  check_login
+
   file_path = File.join(data_path, params[:filename])
   File.delete(file_path)
-
   session[:message] = "#{params[:filename]} has been deleted."
   redirect '/'
 end
