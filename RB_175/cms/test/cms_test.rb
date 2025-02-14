@@ -38,6 +38,9 @@ class CMSTest < Minitest::Test
     { 'rack.session' => { user_state: false} }
   end
 
+
+  #◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
   def test_index
     create_document 'about.md'
     create_document 'changes.txt'
@@ -165,7 +168,8 @@ class CMSTest < Minitest::Test
     assert_includes last_response.body, '>Sign In</button>'
   end
 
-  def test_admin_login
+  def test_valid_login    
+
     post '/users/login', username: 'Admin', password: 'secret'
     assert_equal 302, last_response.status
     assert_equal session[:message], 'Welcome!'
@@ -176,6 +180,8 @@ class CMSTest < Minitest::Test
   end
 
   def test_incorrect_login
+    load_user_credentials
+
     post '/users/login', username: 'sedrick', password: 'max'
     assert_equal 422, last_response.status
 

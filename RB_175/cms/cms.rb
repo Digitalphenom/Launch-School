@@ -2,6 +2,7 @@ require 'sinatra'
 require 'sinatra/reloader'
 require 'erubi'
 require 'redcarpet'
+require 'yaml'
 
 configure do
   enable :sessions
@@ -16,17 +17,26 @@ def session
   last_request.env['rack.session']
 end
 
+def render_markdown(text)
+  markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
+  markdown.render(text)
+end
+
 def data_path
   if ENV['RACK_ENV'] == 'test'
     File.expand_path('test/data', __dir__)
   else
     File.expand_path('data', __dir__)
-  end
+  end 
 end
 
-def render_markdown(text)
-  markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
-  markdown.render(text)
+def load_user_credentials
+  creditals_path = if ENV['RACK_ENV'] == 'test'
+    File.expand_path('../test/users.yml', __FILE__)
+  else
+    File.expand_path('../users.yml', __FILE__)
+  end
+  YAML.load_file(creditals_path)
 end
 
 def load_file_content(path)
@@ -95,14 +105,14 @@ get '/:filename/edit' do
   erb :edit
 end
 
-def valid_user?(username, password)
-  username == 'Admin' && password == 'secret'
-end
 
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 post '/users/login' do
-  if valid_user?(params[:username], params[:password])
+  credentials = load_user_credentials
+  username = params[:username]
+  if credentials.key?(username) &&
+    credentials[username] == params[:password]
     session[:user_state] = true
     session[:message] = 'Welcome!'
     session[:username] = params[:username]
