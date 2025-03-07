@@ -19,7 +19,8 @@ def encrypt_passwords(path)
     if BCrypt::Password.valid_hash?(password)
       contents << "#{username}: #{password}\n"
     else
-      encrypted_password = BCrypt::Password.create(password)
+      encrypted_pass
+      word = BCrypt::Password.create(password)
       contents << "#{username}: #{encrypted_password}\n"
     end
   end
