@@ -1,3 +1,4 @@
+require 'bcrypt'
 require 'sinatra'
 require 'sinatra/reloader'
 require 'erubi'
@@ -8,6 +9,31 @@ configure do
   enable :sessions
   set :session_secret, SecureRandom.hex(32)
 end
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+def encrypt_passwords(path)
+  contents = ''
+
+  YAML.load_file(path).each do |username, password|
+    if BCrypt::Password.valid_hash?(password)
+      contents << "#{username}: #{password}\n"
+    else
+      encrypted_password = BCrypt::Password.create(password)
+      contents << "#{username}: #{encrypted_password}\n"
+    end
+  end
+  File.write(path, contents)
+end
+
+def valid_password?(username, password_input)
+  credentials = load_user_credentials
+  bcrypt = BCrypt::Password.new(credentials[username])
+
+  credentials.key?(username) && bcrypt == password_input
+end
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 def valid_extension?(ext)
   %w[.txt .md].include?(ext)
@@ -31,12 +57,14 @@ def data_path
 end
 
 def load_user_credentials
-  creditals_path = if ENV['RACK_ENV'] == 'test'
+  credentials_path = if ENV['RACK_ENV'] == 'test'
     File.expand_path('../test/users.yml', __FILE__)
   else
     File.expand_path('../users.yml', __FILE__)
   end
-  YAML.load_file(creditals_path)
+  encrypt_passwords(credentials_path)
+  
+  YAML.load_file(credentials_path)
 end
 
 def load_file_content(path)
@@ -68,6 +96,7 @@ end
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 get '/' do
+  require 'pry'; binding.pry
   session[:user_state] = false unless session[:user_state]
   pattern = File.join(data_path, '*')
   @files = Dir.glob(pattern).map do |path|
@@ -109,10 +138,7 @@ end
 # ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 post '/users/login' do
-  credentials = load_user_credentials
-  username = params[:username]
-  if credentials.key?(username) &&
-    credentials[username] == params[:password]
+  if valid_password?(params[:username], params[:password])
     session[:user_state] = true
     session[:message] = 'Welcome!'
     session[:username] = params[:username]

@@ -1,21 +1,2 @@
-Admin: secret
-sedrick: mazda
-derek: GamerKid
-
-
-#users: {
-#   user1 => {username=> 'joe', password => '123' }
-#   user2 => {username=> 'sed', password => '127' }
-#}
-#
-#users[:user1][:username] # => sedrick
-#users[:user1][:password] # => 123
-
-#{ valid_users =>
-#  {username => 'name', password => '123' },
-#  {username => 'name', password => '123' },
-#  {username => 'name', password => '123' },
-#}
-
-# config[:valid_users][:username]
-# config[:valid_users][:password]
+Admin: $2a$12$7QvC3EpmxBJApkC.3xL1.efuzA31buge59VYw0f7QAzFZrr9SYVgO
+sedrick: $2a$12$J5xIkj4nrLA4SftVHu.knuuzB.BYFz9a6RhZIlQm5aI0Dn7pzytUK

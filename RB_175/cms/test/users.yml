@@ -1,4 +1,2 @@
-# test/users.yml
----
-Admin: secret
-sedrick: mazda
+Admin: $2a$12$h5t/LgZEH2TKwCSkBSIGPuWCi/jAYLuHkZQLg71akukPrfOxQKBqG
+sedrick: $2a$12$pLBJ6HhbDZhCcW5IiWaD4e1UfN714SdGLxhrpC7Q8GRyNM7BaEgLG

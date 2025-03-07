@@ -19,7 +19,7 @@ class CMSTest < Minitest::Test
   def setup
     FileUtils.mkdir_p(data_path)
   end
-
+ff
   def teardown
     FileUtils.rm_rf(data_path)
   end
@@ -46,6 +46,7 @@ class CMSTest < Minitest::Test
     create_document 'changes.txt'
 
     get '/'
+
 
     assert_equal 200, last_response.status
     assert_equal 'text/html;charset=utf-8', last_response['Content-Type']
@@ -100,7 +101,7 @@ class CMSTest < Minitest::Test
  #  assert_equal 302, last_response.status
  #  assert_equal 'changes.txt has been updated.', session[:message]
 
- #  follow_redirect!
+ #  follow_redirect!t
 
  #  get '/changes.txt'
  #  assert_equal 200, last_response.status
