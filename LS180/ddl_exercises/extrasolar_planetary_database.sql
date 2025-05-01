@@ -1,3 +1,5 @@
+▣ Exercise 1
+
 CREATE TABLE stars(
   id SERIAL PRIMARY KEY,
   name VARCHAR(25) UNIQUE NOT NULL,
@@ -12,3 +14,11 @@ CREATE TABLE planets(
   mass INT
 );
 
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+▣ Exercise 2
+
+ALTER TABLE planets
+ADD COLUMN star_id INT NOT NULL REFERENCES stars(id)
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
