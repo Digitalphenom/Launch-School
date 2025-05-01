@@ -22,3 +22,12 @@ ALTER TABLE planets
 ADD COLUMN star_id INT NOT NULL REFERENCES stars(id)
 
 #◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+3. 
+
+ALTER TABLE stars
+ALTER COLUMN name TYPE VARCHAR(50);
+
+Updating the datatype to `VARCHAR(50)` does not raise an error  because the existing values meet the specified constraint of 50 chars. If we attempt to update to `VARCHAR(5)` an error is raised.
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
