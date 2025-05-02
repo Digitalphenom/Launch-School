@@ -70,3 +70,17 @@ ALTER TABLE stars
 ADD CONSTRAINT valid_types;
 
 ALTER COLUMN spectral_type TYPE valid_types;
+
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+7. Planetary Mass Precision
+-- Modify the mass column in the planets table so that it allows fractional masses to any degree of precision required. In addition, make sure the mass is required and positive. While we're at it, also make the designation column required.
+
+ALTER TABLE planets
+ALTER COLUMN mass TYPE DECIMAL,
+ADD CONSTRAINT ensure_positive CHECK (mass >= 0),
+ALTER COLUMN mass SET NOT NULL,
+ALTER COLUMN designation SET NOT NULL;
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
