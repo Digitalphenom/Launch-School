@@ -84,3 +84,21 @@ ALTER COLUMN designation SET NOT NULL;
 
 #◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
+8. Add a Semi-Major Axis Column
+
+ALTER TABLE planets
+ADD COLUMN semi_major_axis NUMERIC NOT NULL;
+
+⋄≂≂▫≂≂▫≂≂▫≂▫≂▫≂≂▫≂≂▫≂⋄—◟ Further Exploration ◞—⋄≂▫≂≂▫≂≂▫≂≂▫≂▫≂≂▫≂≂▫≂≂≂⋄
+
+This problem is similar to an earlier problem where a constraint needs to be added to existing data that fails to meet the constraint. This case is slightly different in that we are adding one new column with a `NO NULL` constraint. Since we have existing data, we cant add a `NOT NULL` constraint without raising an error because each column would initially be null. 
+
+One way around this would be to set a `DEFAULT` value of 0, since the smallest axis will likely be greater than 0.
+
+This works, but fails because it allows `NOT NULL` values for every existing row. Another option would be to add the column, without the `NOT NULL` constriant. Populate the data, then add the `NOT NULL` constraint. 
+
+
+ALTER TABLE planets
+ADD COLUMN semi_major_axis NUMERIC;
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
