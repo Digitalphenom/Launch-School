@@ -56,3 +56,17 @@ Well, one option could be to make a backup table, delete all of the existing dat
 This wouldnt work because the `spectral_type` data type is `CHAR(1)`, which only allows single char values. Another option could be to use "reserved" single chars to identify a column that contains a null value or invalid value. So rather than delete the existing data and then modifying the schema. The existing database could be cleaned for null and invalid chars, then the schema level changes would be applied to enforce the new constraints moving forward.
 
 A simpler, more immediate option would be to use `NOT VALID` with `CHECK` to temporarily avoid existing data that does not conform to the specified constraint. Then perform whatever cleaning on the existing data.
+
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+6. Enumerated Types
+
+ALTER TABLE stars
+DROP CONSTRAINT check_type
+
+CREATE TYPE valid_types AS ENUM ('O', 'B', 'A', 'F', 'G', 'K', 'M');
+
+ALTER TABLE stars
+ADD CONSTRAINT valid_types;
+
+ALTER COLUMN spectral_type TYPE valid_types;
