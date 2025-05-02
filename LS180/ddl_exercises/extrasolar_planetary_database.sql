@@ -102,3 +102,13 @@ ALTER TABLE planets
 ADD COLUMN semi_major_axis NUMERIC;
 
 #◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+9. For this exercise, your task is to add that table to the database. The table should include the following data:
+
+CREATE TABLE moons(
+  id SERIAL PRIMARY KEY,
+  designation INT NOT NULL,
+  semi_major_axis DECIMAL CHECK (semi_major_axis > 0.0),
+  mass DECIMAL CHECK (mass > 0.0),
+  planet_id INT NOT NULL REFERENCES planets(id);
+);
