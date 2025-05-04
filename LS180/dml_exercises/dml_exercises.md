@@ -149,3 +149,31 @@ WHERE part_number = (
 
 -- The subquery executes first, which returns the smallest part_number on "Gyroscopes" device then the device_number is updated on that returned row.
 ```
+
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+10. Delete Accelerometer
+```sql
+UPDATE parts SET device_id = NULL WHERE device_id = 1;
+-- OR 
+DELETE FROM parts WHERE device_id = 1;
+-- then
+DELETE FROM devices WHERE name = 'Accelorometer';
+```
+
+### ⋄≂≂▫≂≂▫≂≂▫≂▫≂▫≂≂▫≂≂▫≂⋄—◟ Further Exploration ◞—⋄≂▫≂≂▫≂≂▫≂≂▫≂▫≂≂▫≂≂▫≂≂≂⋄
+
+This process may have been a bit simpler if we had initially defined our devices tables a bit differently. We could delete both a device and its associated parts with one SQL statement if that were the case. What change would have to be made to table parts to make this possible? Also, what SQL statement would you have to write that can delete both a device and its parts all in one go?
+
+- We could have set-up our parts schema so that it deletes when a device is deleted. `ON DELETE CASCADE`. This set-up would allow for both all rows associated with the device we want to delete to be removed.
+
+▣ Devices
+  □ id
+  □ name
+  □ created_at
+
+▣ Parts
+  □ id
+  □ part_number
+
+- DELETE FROM devices WHERE devices.id = 2;
