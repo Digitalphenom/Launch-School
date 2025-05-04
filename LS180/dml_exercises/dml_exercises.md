@@ -117,3 +117,35 @@ LEFT JOIN devices b ON a.created_at < b.created_at
 WHERE b.created_at IS NULL;
 
 ```
+# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+10. UPDATE device_id
+
+Our devices table contains parts that dont belong to "Gyroscope". Remove Gyros last two parts and place them in "Accelerometer".
+
+My initial thinking was to drop the parts from the parts table and then re-insert them associated to the correct device_id. However, it looks like I can simply update those parts associated id the correct one without dropping them.
+
+Algo/
+Access part number 37 and 39, update its device_id to 1.
+
+```sql
+UPDATE parts SET device_id = 1
+WHERE part_number = 37 OR part_number = 39;
+```
+
+#⋄≂≂▫≂≂▫≂≂▫≂▫≂▫≂≂▫≂≂▫≂⋄—◟ Further Exploration ◞—⋄≂▫≂≂▫≂≂▫≂≂▫≂▫≂≂▫≂≂▫≂≂≂⋄
+
+What if we wanted to set the part with the smallest part_number to be associated with "Gyroscope"? How would we go about doing that?
+
+If we wanted to update the part with the smallest `part_number` I would sort the table by `part_number` in ASC order, limit the table to the first row then apply the update on that row.
+
+```sql
+UPDATE parts SET device_id = 1
+WHERE part_number = (
+  SELECT part_number FROM parts
+  WHERE device_id = 2
+  ORDER BY part_number
+  LIMIT 1);
+
+-- The subquery executes first, which returns the smallest part_number on "Gyroscopes" device then the device_number is updated on that returned row.
+```
