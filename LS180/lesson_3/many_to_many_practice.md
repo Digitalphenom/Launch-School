@@ -42,4 +42,48 @@ GROUP BY b.author
 ORDER BY b.author;
 ```
 
-# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+fsf# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+3. Write SQL statements to insert the following new books into the database. What do you need to do to ensure this data fits in the database?
+
+I would first add the new values into the database. Each author is new so id begin 
+there along with titles of each book.
+
+Then i'd add each new category:
+  ▣ Space Exploration
+  ▣ Cookbook
+  ▣ South Asia
+
+Once that's done update the JOIN table with each new author & category
+
+```sql
+
+ALTER TABLE books
+ALTER COLUMN title TYPE text;
+
+INSERT INTO books (title, author)
+  VALUES
+    ('Sally Ride: America''s First Woman in Space', 'Lynn Sherr'),
+    ('Jane Eyre', 'Charlotte Bront'),
+    ('Vij''s: Elegant and Inspired Indian Cuisine', 'Vikram Vij'),
+    ('Vij''s: Elegant and Inspired Indian Cuisine', 'Meeru Dhalwala');
+
+INSERT INTO categories (name)
+  VALUES
+    ('Space Exploration'),
+    ('Cookbook'),
+    ('South Asia');
+
+INSERT INTO books_categories (book_id, category_id)
+  VALUES
+    (4, 1),
+    (4, 5),
+    (4, 6),
+    (5, 2),
+    (5, 4),
+    (6, 8),
+    (6, 1),
+    (6, 9);
+
+
+```
