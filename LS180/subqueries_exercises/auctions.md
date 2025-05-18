@@ -41,7 +41,18 @@ SELECT DISTINCT i.name AS bid_on_items FROM items i
   WHERE i.id IN (SELECT DISTINCT item_id FROM bids);
   
 ```
-
 #### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
+3. Conditional Subqueries: NOT IN
+
+```sql
+SELECT i.name AS "Not Bid On" FROM items i
+  LEFT OUTER JOIN bids ON i.id = bids.item_id
+  WHERE bids.item_id IS NULL;
+
+  -- OR
+
+SELECT i.name AS "Not Bid On" FROM items i
+  WHERE i.id NOT IN (SELECT item_id FROM bids);
+```
 
