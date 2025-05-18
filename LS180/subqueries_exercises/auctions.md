@@ -28,5 +28,20 @@ CREATE TABLE bids(
 ```
 #### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
+2. Conditional Subqueries: IN
+
+```sql
+SELECT DISTINCT i.name AS bid_on_items FROM items i
+    LEFT OUTER JOIN bids ON bids.item_id = i.id
+  WHERE bids.item_id IS NOT NULL;
+
+-- ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+SELECT DISTINCT i.name AS bid_on_items FROM items i
+  WHERE i.id IN (SELECT DISTINCT item_id FROM bids);
+  
+```
+
+#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 
