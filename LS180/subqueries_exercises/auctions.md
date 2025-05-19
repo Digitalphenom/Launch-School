@@ -75,3 +75,23 @@ SELECT b.name FROM bidders b
     );
 
 ```
+### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+5. Query From a Transient Table
+
+The first thing to do is to return a table that contains all bidders and theyre associated bids. Then use this table to determine the greatest count from the outer query.
+
+```sql
+  SELECT MAX(inner_table.count) FROM 
+  ( SELECT b.name, COUNT(bids.item_id) FROM bidders b
+  LEFT OUTER JOIN bids ON bids.item_id = b.id
+  GROUP BY b.name
+  ORDER BY COUNT(bids.item_id) DESC) AS inner_table;
+
+-- OR
+
+  SELECT MAX(inner_table.count) FROM (
+    SELECT COUNT(b.bidder_id) FROM bids b
+    GROUP BY b.bidder_id
+  ) AS inner_table;
+```
