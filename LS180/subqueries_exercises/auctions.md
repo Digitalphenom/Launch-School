@@ -95,3 +95,24 @@ The first thing to do is to return a table that contains all bidders and theyre 
     GROUP BY b.bidder_id
   ) AS inner_table;
 ```
+### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+6. Scalar Subqueries
+
+```sql
+SELECT items.name, COUNT(bids.item_id) FROM items
+  LEFT OUTER JOIN bids ON bids.item_id = items.id
+  GROUP BY items.name, items.id
+  ORDER BY items.id;
+
+-- OR
+
+SELECT items.name, (
+  SELECT COUNT(bids.item_id) FROM bids
+  WHERE items.id = bids.item_id
+  )
+FROM items;
+
+```
+
+### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
