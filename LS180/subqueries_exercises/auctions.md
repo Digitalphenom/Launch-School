@@ -130,3 +130,47 @@ SELECT id FROM items
     ROW("name", initial_price, sales_price);
 
 ```
+
+### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+8. EXPLAIN
+
+```sql
+SELECT DISTINCT b.name FROM bidders b
+  LEFT OUTER JOIN bids ON bids.bidder_id = b.id
+  WHERE bids.bidder_id IS NOT NULL;
+
+-- ‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧‧
+
+SELECT b.name FROM bidders b
+  WHERE EXISTS (
+    SELECT 1 FROM bids
+      WHERE bids.bidder_id = b.id
+    );
+
+```
+
+I used SELECT DISTINCT along with a LEFT OUTER JOIN and a WHERE condition.
+Im seeing the following nodes and they're cost respectively.
+
+  - a HashAggregate (total cost 29.63)
+  - Hash Join
+  - Seq Scan on bidders
+  - Hash
+  - Seq Scan on bids
+
+  - Hash Semi Join (27.91)
+  - Seq Scan on bidders
+  - Hash
+  - Seq Scan on bids
+
+From what I understand the top most node is what I should be on the look out for. So for the first query that uses a `join` table the top node `HashAggregate` has a total cost of `29.37` and a node count of 4.
+
+The second query uses `EXISTS` and is slightly less resource intensive with the top node `Hash Join` totaling in at `27.91` with only 3 nodes. However, the starting cost is significantly higher at `29.37` over `1.58` for the join table.
+
+Im not sure what the ramifications of this seemingly, slight improvement is on a database, but based on the theory. The slight total cost improvement of the `EXISTS` table over the `JOIN` table is preferable especially on large databases. However, I don't know how the significantly higher starting cost's factors into the equation.
+
+After using `ANALYZE` on both queries. It looks like the actual time is calculated in segmented loops, making it hard to compare the estimate vs actual time, unless I manually multiply the loop times. I think I need more context.
+
+### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
