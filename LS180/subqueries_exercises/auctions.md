@@ -116,3 +116,17 @@ FROM items;
 ```
 
 ### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+7. Row Comparison
+return the id number for the item that matches "'Painting', 100.00, 250.00"
+
+```sql
+SELECT id FROM items
+  WHERE 'Painting, 100.00, 250.00' =
+  CONCAT_WS(', ', "name", initial_price, sales_price);
+
+SELECT id FROM items
+  WHERE ROW('Painting', 100.00, 250.00) = 
+    ROW("name", initial_price, sales_price);
+
+```
