@@ -174,3 +174,28 @@ After using `ANALYZE` on both queries. It looks like the actual time is calculat
 
 ### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
+9. Comparing SQL Statements
+
+```sql
+EXPLAIN ANALYZE SELECT MAX(bid_counts.count) FROM
+  (SELECT COUNT(bidder_id) FROM bids GROUP BY bidder_id) AS bid_counts;
+```
+When running EXPLAIN ANALYZE on this query we get a total cost of 1.98 and an axtual run time of 0.072 for 1 row.
+The planning time is 0.214m
+The Execution time is 0.114m
+
+```sql
+EXPLAIN ANALYZE SELECT COUNT(bidder_id) AS max_bid FROM bids
+  GROUP BY bidder_id
+  ORDER BY max_bid DESC
+  LIMIT 1;
+```
+
+This query gives a total cost of 1.78 and an actual run time of 0.268 for 1 row and loop.
+The Planning time is 0.489m
+The Execution time is 0.378m
+
+
+Between the two queries, the one using a subquery with `MAX()` performs better both in planning and execution time.
+
+This makes the subquery, slightly more efficient than the query without a subquery.
