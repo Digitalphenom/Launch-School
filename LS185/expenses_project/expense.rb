@@ -3,9 +3,13 @@
 require "pg"
 require "bundler/setup"
 
+command = ARGV.first
+DB = PG.connect(dbname:"expenses")
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
 def display_list_expense
-  db = PG.connect(dbname:"expenses")
-  result = db.exec("SELECT * FROM expenses")
+  result = DB.exec("SELECT * FROM expenses")
 
   result.each do |row|
   puts "#{row['id']}| #{row['created_on'].rjust(5)} | #{row['amount'].rjust (10)} | #{row['memo']}"
@@ -26,10 +30,28 @@ def display_help
   HEREDOC
 end
 
+def display_error
+  puts "You must provide an amount and memo"
+end
+
+def add_expenses
+  type, amount, memo = ARGV
+  require 'pry-byebug'; binding.pryc
+  return display_error if amount.nil? || memo.nil?
+  sql = "INSERT INTO expenses(amount, memo, created_on) VALUES('#{amount}', '#{memo}', NOW())"
+  DB.exec(sql)
+end
+
+#◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
 if ARGV.empty?
   display_help
-else
+elsif command == "list"
   display_list_expense
+elsif command == "add"
+  add_expenses
+else
+  puts "Invalid command"
 end
 
 # We use a `<<-` to display our content in the format in which we write it rather than needing to manually insert `\n` chars.
