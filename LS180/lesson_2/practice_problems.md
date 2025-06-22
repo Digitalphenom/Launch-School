@@ -2,7 +2,7 @@
 
 The result of using an operator on a NULL value is nothing or `NULL` because unlike Ruby where `nil` can be directly compared against to obtain a truthy value. `NULL` refers to nothing in the literal sense, thus cannot be compared with anything, not even `NULL` itself.
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+--------
 
 2. Set the default value of column department to "unassigned". Then set the value of the department column to "unassigned" for any rows where it has a NULL value. Finally, add a NOT NULL constraint to the department column.
 
@@ -28,7 +28,7 @@ ALTER TABLE employees
 ALTER COLUMN department SET NOT NULL;
 ```
 
-### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+--------
 
 3. Write the SQL statement to create a table called temperatures to hold the following data:
 
@@ -57,7 +57,7 @@ ALTER COLUMN low SET NOT NULL,
 ALTER COLUMN high SET NOT NULL;
 ```
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+--------
 
 5. Write a SQL statement to determine the average (mean) temperature (divide the sum of the high and low temperatures by two) for each day from March 2, 2016 through March 8, 2016. Make sure to round each average value to one decimal place.
 
@@ -67,7 +67,7 @@ WHERE date BETWEEN  '2016-03-02' AND '2016-03-08';
 
 ```
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+--------
 
 6. Write a SQL statement to add a new column, rainfall, to the temperatures table. It should store millimeters of rain as integers and have a default value of 0.
 
@@ -75,7 +75,7 @@ WHERE date BETWEEN  '2016-03-02' AND '2016-03-08';
 ALTER TABLE temperatures
 ADD COLUMN rainfall INT DEFAULT 0;
 ```
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+--------
 
 7. Each day, it rains one millimeter for every degree the average temperature goes above 35. Write a SQL statement to update the data in the table temperatures to reflect this.
 
