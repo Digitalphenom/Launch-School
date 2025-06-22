@@ -39,8 +39,7 @@ CREATE TABLE customers_services(
 );
 
 ```
-
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+---
 
 2. Get Customers With Services
 
@@ -52,7 +51,8 @@ SELECT DISTINCT c.*, STRING_AGG(s.descriptions, ', ') AS services_registed_to
 GROUP BY c.id;
 
 ```
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+
+---
 
 3. Get Customers With No Services
 
@@ -63,21 +63,21 @@ SELECT c.*, s.*
   FULL OUTER JOIN services s ON cs.service_id = s.id
 WHERE cs.service_id IS NULL;
 ```
-
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+---
 
 4. Get Services With No Customers
 
 Using RIGHT OUTER JOIN, write a query to display a list of all services that are not currently in use. Your output should look like this:
 
- description
--------------
+```sql
  One-to-one Training
 (1 row)
+```
+```
 
+---
 
-```sql
---LS solution
+LS solution
 
 SELECT s.description
   FROM customers_services cs
@@ -94,7 +94,7 @@ SELECT s.description
 WHERE cs.customer_id IS NULL;
 ```
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+---
 
 5. Services for each Customer
 
@@ -109,7 +109,7 @@ ORDER BY c.id;
 
 ```
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+---
 
 6. Services With At Least 3 Customers
 
@@ -132,18 +132,20 @@ HAVING COUNT(cs.customer_id) >= 3;
 
 ```
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+---
 
 7. Total Gross Income
 
 Assuming that everybody in our database has a bill coming due, and that all of them will pay on time, write a query to compute the total gross income we expect to receive.
 
+```
 Answer:
 
   gross
  --------
  678.50
 (1 row)
+```
 
 ```sql
 SELECT SUM(s.price)
@@ -153,7 +155,7 @@ SELECT SUM(s.price)
 
 This query does not require a second table because we can get all the data we need from `services`, which contains all `price` columns and `customers_services`, which contains all instances of customer and service relationships. From this we can get the sum of services who have a connection to a customer since each `service_id` is tied to a `customer_id` in the `customers_services` table.
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+---
 
 8. Add New Customer
 
@@ -169,11 +171,9 @@ INSERT INTO customers_services (customer_id, service_id)
     (7, 1),
     (7, 2),
     (7, 3);
-
-
 ```
 
-#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+---
 
 9. Hypothetically
 
