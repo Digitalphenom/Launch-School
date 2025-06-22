@@ -1,4 +1,4 @@
-# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 1. Write a SQL statement that makes a new sequence called "counter".
 
@@ -17,7 +17,7 @@ SELECT nextval('counter');
 
 ```
 
-# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+#### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 3. Write a SQL statement that removes a sequence called "counter".
 
@@ -34,6 +34,6 @@ CREATE SEQUENCE counter INCREMENT BY 2 MINVALUE 2;
 
 ```
 
-# ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
+### ◟◅◸◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◅▻◞
 
 ALTER TABLE films ADD COLUMN id serial PRIMARY KEY;
